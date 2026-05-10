@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { Download, CheckSquare, Briefcase, Users, UserPlus, Sparkles, ChevronRight } from "lucide-react";
+import { Download, CheckSquare, Briefcase, Users, UserPlus, Sparkles, ChevronRight, Play } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { PWAInstall } from "@/components/pwa-install";
@@ -71,7 +71,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-[100dvh] pb-24 px-6 flex flex-col pt-8">
+    <div className="min-h-[100dvh] pb-10 px-6 flex flex-col pt-8">
 
       {/* Date Header */}
       <div className="flex justify-between items-center mb-6">
@@ -123,32 +123,79 @@ export default function HomePage() {
         transition={{ delay: 0.3 }}
         className="mb-8"
       >
-        <h3 className="text-sm font-bold text-slate-300 mb-4 uppercase tracking-wider px-2">How to use</h3>
-        <div className="grid gap-3">
+        <h3 className="text-sm font-bold text-slate-300 mb-4 uppercase tracking-wider px-2 flex items-center gap-2">
+          🎯 Tools
+        </h3>
+        <div className="grid grid-cols-2 gap-3">
           {APP_FEATURES.map((feat, idx) => (
             <motion.div
               key={idx}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.4 + (idx * 0.1) }}
             >
-              <Link href={feat.href} className={`bg-gradient-to-r ${feat.color} backdrop-blur-sm border ${feat.border} rounded-2xl p-4 flex items-center gap-4 hover:brightness-110 active:scale-[0.98] transition-all`}>
+              <Link href={feat.href} className={`bg-gradient-to-br ${feat.color} backdrop-blur-sm border ${feat.border} rounded-2xl p-4 flex flex-col items-center text-center gap-3 hover:brightness-110 active:scale-[0.98] transition-all h-full`}>
                 <div className="bg-black/20 p-3 rounded-xl shadow-inner">
                   {feat.icon}
                 </div>
-                <div className="flex-1">
-                  <h4 className="font-bold text-white text-sm">{feat.title}</h4>
-                  <p className="text-xs text-slate-300 mt-0.5">{feat.desc}</p>
+                <div>
+                  <h4 className="font-bold text-white text-[13px] leading-tight">{feat.title}</h4>
+                  <p className="text-[10px] text-slate-300 mt-1 line-clamp-2">{feat.desc}</p>
                 </div>
-                <ChevronRight size={16} className="text-white/30" />
               </Link>
             </motion.div>
           ))}
         </div>
       </motion.div>
 
-
-
+      {/* Boarding Pack Videos */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.8 }}
+        className="mb-8"
+      >
+        <h3 className="text-sm font-bold text-slate-300 mb-4 uppercase tracking-wider px-2 flex items-center gap-2">
+          <Play size={14} className="fill-red-500 text-red-500" /> Boarding Pack
+        </h3>
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            {
+              title: "Why Emphasis",
+              speaker: "ภาคภูมิ นิติธรรม",
+              url: "https://youtu.be/LuIrrAqeVZo?si=vYEXN6s25XoeGLu9",
+              color: "from-red-500/20 to-orange-500/20",
+              border: "border-red-500/30"
+            },
+            {
+              title: "Business Partnership",
+              speaker: "วิรุฬ โตศะศุข",
+              url: "https://youtu.be/Az8wfW6jpuc?si=rRMFgoUeHWx5c46_",
+              color: "from-orange-500/20 to-yellow-500/20",
+              border: "border-orange-500/30"
+            }
+          ].map((vid, idx) => (
+            <motion.a
+              key={idx}
+              href={vid.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.9 + (idx * 0.1) }}
+              className={`bg-gradient-to-br ${vid.color} backdrop-blur-sm border ${vid.border} rounded-2xl p-4 flex flex-col items-center text-center gap-3 hover:brightness-110 active:scale-[0.98] transition-all h-full`}
+            >
+              <div className="bg-red-500/20 p-3 rounded-xl shadow-inner text-red-400">
+                <Play size={20} fill="currentColor" />
+              </div>
+              <div>
+                <h4 className="font-bold text-white text-[13px] leading-tight">{vid.title}</h4>
+                <p className="text-[9px] text-slate-300 mt-1 font-medium uppercase tracking-wider">{vid.speaker}</p>
+              </div>
+            </motion.a>
+          ))}
+        </div>
+      </motion.div>
     </div>
   );
 }

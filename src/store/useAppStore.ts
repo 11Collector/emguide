@@ -96,7 +96,8 @@ export const useAppStore = create<AppState>()(
         return { newComers: updatedComers };
       }),
       addCase: (newCase) => set((state) => {
-        const caseRecord = { ...newCase, id: Date.now().toString(), createdAt: Date.now(), completedSteps: [] };
+        const initialSteps = newCase.type === "BM" ? ["BM"] : newCase.type === "EM6W" ? ["6W"] : [];
+        const caseRecord = { ...newCase, id: Date.now().toString(), createdAt: Date.now(), completedSteps: initialSteps };
         if (db) {
            setDoc(doc(db, "cases", caseRecord.id), caseRecord).catch(e => console.error("Firebase sync error", e));
         }

@@ -13,6 +13,11 @@ const kanitFont = Kanit({
 export const metadata: Metadata = {
   title: "EM GUIDE",
   description: "Daily & Weekly Tracker for EMPHASIS",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "EM GUIDE",
+  },
 };
 
 export const viewport: Viewport = {
@@ -20,6 +25,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  themeColor: "#030712",
 };
 
 export default function RootLayout({

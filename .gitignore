@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.venv/
+extract.py
+extracted_text_2026.txt
+.DS_Store

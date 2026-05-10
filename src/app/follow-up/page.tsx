@@ -7,7 +7,7 @@ import { Plus, CheckCircle2, Circle, ChevronDown, ChevronUp, User, ChevronLeft, 
 import Image from "next/image";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/lib/utils";
-import { SwipeDeleteWrapper } from "@/components/swipe-delete-wrapper";
+
 
 const BUSINESS_STEPS = ["BM", "BI", "2YRS", "UNIQUENESS", "CHECKIN", "5STEP"];
 const PRODUCT_STEPS = ["6W", "ARTISTRY", "ESPRING", "HOUSEHOLD", "SKY", "DETOX"];
@@ -164,14 +164,8 @@ export default function FollowUpPage() {
             const isExpanded = expandedId === c.id;
 
             return (
-              <SwipeDeleteWrapper 
-                key={c.id}
-                onDelete={() => {
-                  const { deleteCase } = useAppStore.getState();
-                  deleteCase(c.id);
-                }}
-              >
                 <motion.div
+                  key={c.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.05 * i }}
@@ -272,7 +266,6 @@ export default function FollowUpPage() {
                     )}
                   </AnimatePresence>
                 </motion.div>
-              </SwipeDeleteWrapper>
             );
           })
         )}

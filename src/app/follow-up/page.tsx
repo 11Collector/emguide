@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { format, startOfMonth, endOfMonth, subMonths, addMonths } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, Circle, ChevronDown, ChevronUp, User, ChevronLeft, ChevronRight, Briefcase, ShoppingBag, Edit2, Check, X } from "lucide-react";
+import { Plus, CheckCircle2, Circle, ChevronDown, ChevronUp, User, ChevronLeft, ChevronRight, Briefcase, ShoppingBag, Edit2, Check, X } from "lucide-react";
 import Image from "next/image";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/lib/utils";
+import { SwipeDeleteWrapper } from "@/components/swipe-delete-wrapper";
 
 const BUSINESS_STEPS = ["BM", "BI", "2YRS", "UNIQUENESS", "CHECKIN", "5STEP"];
 const PRODUCT_STEPS = ["6W", "ARTISTRY", "ESPRING", "HOUSEHOLD", "SKY", "DETOX"];
@@ -163,108 +164,115 @@ export default function FollowUpPage() {
             const isExpanded = expandedId === c.id;
 
             return (
-              <motion.div
+              <SwipeDeleteWrapper 
                 key={c.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 * i }}
-                className={cn(
-                  "bg-white/5 backdrop-blur-xl rounded-3xl border transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden",
-                  isExpanded ? "border-emerald-400/50 shadow-[0_0_20px_rgba(16,185,129,0.2)]" : "border-white/10"
-                )}
+                onDelete={() => {
+                  const { deleteCase } = useAppStore.getState();
+                  deleteCase(c.id);
+                }}
               >
-                {/* Header */}
-                <button 
-                  onClick={() => toggleExpand(c.id)}
-                  className="w-full p-4 flex items-center justify-between text-left relative overflow-hidden"
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 * i }}
+                  className={cn(
+                    "bg-[#0F172A] rounded-3xl border transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden relative z-10",
+                    isExpanded ? "border-emerald-400/50 shadow-[0_0_20px_rgba(16,185,129,0.2)]" : "border-white/10"
+                  )}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-teal-500/5" />
-                  
-                  <div className="flex items-center gap-4 relative z-10 w-full pr-4">
-                    <div className={cn(
-                      "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-inner border",
-                      c.type === "BM" ? "bg-blue-500/20 border-blue-500/30 text-blue-400" : "bg-emerald-500/20 border-emerald-500/30 text-emerald-400"
-                    )}>
-                      <User size={24} className="drop-shadow-lg" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-center w-full mb-1">
-                        <h3 className="font-extrabold text-white text-base truncate">{c.name}</h3>
-                        <span className="text-emerald-400 font-extrabold text-sm drop-shadow-md">{progress}%</span>
+                  {/* Header */}
+                  <button 
+                    onClick={() => toggleExpand(c.id)}
+                    className="w-full p-4 flex items-center justify-between text-left relative overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-teal-500/5" />
+                    
+                    <div className="flex items-center gap-4 relative z-10 w-full pr-4">
+                      <div className={cn(
+                        "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-inner border",
+                        c.type === "BM" ? "bg-blue-500/20 border-blue-500/30 text-blue-400" : "bg-emerald-500/20 border-emerald-500/30 text-emerald-400"
+                      )}>
+                        <User size={24} className="drop-shadow-lg" />
                       </div>
-                      <p className="text-slate-400 text-xs truncate max-w-[90%] font-medium">
-                        {c.notes ? c.notes : "ยังไม่มีบันทึกเพิ่มเติม..."}
-                      </p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-center w-full mb-1">
+                          <h3 className="font-extrabold text-white text-base truncate">{c.name}</h3>
+                          <span className="text-emerald-400 font-extrabold text-sm drop-shadow-md">{progress}%</span>
+                        </div>
+                        <p className="text-slate-400 text-xs truncate max-w-[90%] font-medium">
+                          {c.notes ? c.notes : "ยังไม่มีบันทึกเพิ่มเติม..."}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-slate-400 relative z-10 shrink-0">
-                    {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                  </div>
-                  
-                  {/* Progress bar background in header */}
-                  <div className="absolute bottom-0 left-0 h-1 bg-black/40 w-full">
-                    <div 
-                      className="h-full bg-gradient-to-r from-emerald-400 to-teal-400 shadow-[0_0_10px_rgba(45,212,191,0.8)]" 
-                      style={{ width: `${progress}%` }} 
-                    />
-                  </div>
-                </button>
+                    <div className="text-slate-400 relative z-10 shrink-0">
+                      {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                    </div>
+                    
+                    {/* Progress bar background in header */}
+                    <div className="absolute bottom-0 left-0 h-1 bg-black/40 w-full">
+                      <div 
+                        className="h-full bg-gradient-to-r from-emerald-400 to-teal-400 shadow-[0_0_10px_rgba(45,212,191,0.8)]" 
+                        style={{ width: `${progress}%` }} 
+                      />
+                    </div>
+                  </button>
 
-                {/* Expanded Content */}
-                <AnimatePresence>
-                  {isExpanded && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="border-t border-white/10 bg-black/20"
-                    >
-                      {/* Notes Section */}
-                      <div className="p-5 border-b border-white/5">
-                        <div className="flex justify-between items-center mb-3">
-                          <h4 className="text-[10px] font-extrabold text-emerald-400 uppercase tracking-widest flex items-center gap-1.5">
-                            <Edit2 size={12} /> Detail & Notes
-                          </h4>
-                          {editingNotesId !== c.id ? (
-                            <button onClick={(e) => startEditingNotes(e, c.id, c.notes)} className="text-slate-400 hover:text-white p-1.5 bg-white/5 rounded-lg transition-colors">
-                              <Edit2 size={12} />
-                            </button>
+                  {/* Expanded Content */}
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="border-t border-white/10 bg-black/20"
+                      >
+                        {/* Notes Section */}
+                        <div className="p-5 border-b border-white/5">
+                          <div className="flex justify-between items-center mb-3">
+                            <h4 className="text-[10px] font-extrabold text-emerald-400 uppercase tracking-widest flex items-center gap-1.5">
+                              <Edit2 size={12} /> Detail & Notes
+                            </h4>
+                            {editingNotesId !== c.id ? (
+                              <button onClick={(e) => startEditingNotes(e, c.id, c.notes)} className="text-slate-400 hover:text-white p-1.5 bg-white/5 rounded-lg transition-colors">
+                                <Edit2 size={12} />
+                              </button>
+                            ) : (
+                              <div className="flex gap-2">
+                                <button onClick={() => setEditingNotesId(null)} className="text-slate-400 hover:text-white p-1.5 bg-white/5 rounded-lg">
+                                  <X size={14} />
+                                </button>
+                                <button onClick={() => saveNotes(c.id)} className="text-white p-1.5 bg-emerald-500/80 hover:bg-emerald-400 rounded-lg shadow-[0_0_10px_rgba(16,185,129,0.5)]">
+                                  <Check size={14} />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {editingNotesId === c.id ? (
+                            <textarea
+                              value={tempNotes}
+                              onChange={(e) => setTempNotes(e.target.value)}
+                              className="w-full bg-black/40 border border-emerald-500/50 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-400 min-h-[80px] resize-none shadow-inner"
+                              placeholder="บันทึกว่าคนนี้ต้องเติมเรื่องอะไรดี..."
+                              autoFocus
+                            />
                           ) : (
-                            <div className="flex gap-2">
-                              <button onClick={() => setEditingNotesId(null)} className="text-slate-400 hover:text-white p-1.5 bg-white/5 rounded-lg">
-                                <X size={14} />
-                              </button>
-                              <button onClick={() => saveNotes(c.id)} className="text-white p-1.5 bg-emerald-500/80 hover:bg-emerald-400 rounded-lg shadow-[0_0_10px_rgba(16,185,129,0.5)]">
-                                <Check size={14} />
-                              </button>
-                            </div>
+                            <p className="text-sm text-slate-200 bg-white/5 p-4 rounded-xl border border-white/5 min-h-[60px] leading-relaxed shadow-inner">
+                              {c.notes || <span className="text-slate-500 font-medium italic">ยังไม่มีข้อมูล คลิกปุ่มแก้ไขเพื่อเพิ่มบันทึก</span>}
+                            </p>
                           )}
                         </div>
-                        
-                        {editingNotesId === c.id ? (
-                          <textarea
-                            value={tempNotes}
-                            onChange={(e) => setTempNotes(e.target.value)}
-                            className="w-full bg-black/40 border border-emerald-500/50 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-400 min-h-[80px] resize-none shadow-inner"
-                            placeholder="บันทึกว่าคนนี้ต้องเติมเรื่องอะไรดี..."
-                            autoFocus
-                          />
-                        ) : (
-                          <p className="text-sm text-slate-200 bg-white/5 p-4 rounded-xl border border-white/5 min-h-[60px] leading-relaxed shadow-inner">
-                            {c.notes || <span className="text-slate-500 font-medium italic">ยังไม่มีข้อมูล คลิกปุ่มแก้ไขเพื่อเพิ่มบันทึก</span>}
-                          </p>
-                        )}
-                      </div>
 
-                      <div className="px-5 py-6">
-                        {renderSteps(c.id, completed, BUSINESS_STEPS, "Business Steps", Briefcase, "text-blue-400")}
-                        <div className="h-6" />
-                        {renderSteps(c.id, completed, PRODUCT_STEPS, "Product Steps", ShoppingBag, "text-teal-400")}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
+                        <div className="px-5 py-6">
+                          {renderSteps(c.id, completed, BUSINESS_STEPS, "Business Steps", Briefcase, "text-blue-400")}
+                          <div className="h-6" />
+                          {renderSteps(c.id, completed, PRODUCT_STEPS, "Product Steps", ShoppingBag, "text-teal-400")}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              </SwipeDeleteWrapper>
             );
           })
         )}

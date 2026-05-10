@@ -7,6 +7,7 @@ import { Plus, Briefcase, TrendingUp, User, Target, ChevronLeft, ChevronRight } 
 import Image from "next/image";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/lib/utils";
+import { SwipeDeleteWrapper } from "@/components/swipe-delete-wrapper";
 
 export default function TwoYearsPage() {
   const { cases, totalPV, addCase, setPV } = useAppStore();
@@ -77,11 +78,6 @@ export default function TwoYearsPage() {
           >
             บันทึกเคสรายเดือน
           </motion.p>
-        </div>
-        <div className="ml-auto flex flex-col items-end">
-          <div className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-[0.2em]">
-            {format(new Date(), "dd MMM yyyy")}
-          </div>
         </div>
       </header>
 
@@ -228,33 +224,36 @@ export default function TwoYearsPage() {
           </div>
         ) : (
           currentMonthCases.map((c, i) => (
-            <motion.div
-              key={c.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 * i }}
-              className="bg-white/5 backdrop-blur-xl p-4 rounded-3xl border border-white/10 shadow-lg flex items-center gap-4 group hover:bg-white/10 transition-colors"
+            <SwipeDeleteWrapper 
+              key={c.id} 
+              onDelete={() => {
+                const { deleteCase } = useAppStore.getState();
+                deleteCase(c.id);
+              }}
             >
-              <div className={cn(
-                "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-inner border",
-                c.type === 'BM' ? 'bg-blue-500/20 border-blue-500/30 text-blue-400' : 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400'
-              )}>
-                <User size={24} className="drop-shadow-lg" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-center mb-1">
-                  <h4 className="font-extrabold text-white text-base truncate pr-2">{c.name}</h4>
-                  <span className={cn(
-                    "text-[9px] font-extrabold px-2 py-1 rounded-full uppercase shrink-0",
-                    c.type === 'BM' ? "bg-blue-500 text-white shadow-[0_0_10px_rgba(59,130,246,0.5)]" : "bg-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.5)]"
-                  )}>
-                    {c.type}
-                  </span>
+              <div
+                className="bg-[#0F172A] p-4 rounded-3xl border border-white/10 shadow-lg flex items-center gap-4 relative z-10"
+              >
+                <div className={cn(
+                  "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-inner border",
+                  c.type === 'BM' ? 'bg-blue-500/20 border-blue-500/30 text-blue-400' : 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400'
+                )}>
+                  <User size={24} className="drop-shadow-lg" />
                 </div>
-                {c.notes && <p className="text-slate-400 text-xs truncate">{c.notes}</p>}
-                <p className="text-slate-500 text-[10px] mt-1.5 uppercase tracking-wider font-bold">{format(new Date(c.createdAt), "dd MMM, HH:mm")}</p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-center mb-1">
+                    <h4 className="font-extrabold text-white text-base truncate pr-2">{c.name}</h4>
+                    <span className={cn(
+                      "text-[9px] font-extrabold px-2 py-1 rounded-full uppercase shrink-0",
+                      c.type === 'BM' ? "bg-blue-500 text-white shadow-[0_0_10px_rgba(59,130,246,0.5)]" : "bg-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.5)]"
+                    )}>
+                      {c.type}
+                    </span>
+                  </div>
+                  {c.notes && <p className="text-slate-400 text-xs truncate mt-1">{c.notes}</p>}
+                </div>
               </div>
-            </motion.div>
+            </SwipeDeleteWrapper>
           ))
         )}
       </div>

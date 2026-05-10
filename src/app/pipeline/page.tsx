@@ -7,6 +7,7 @@ import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
+import { SwipeDeleteWrapper } from "@/components/swipe-delete-wrapper";
 
 const PIPELINE_STAGES = [
   { id: 1, label: "9 Slides", color: "bg-slate-100 text-slate-700 border-slate-200" },
@@ -143,111 +144,116 @@ export default function Pipeline() {
               const isExpanded = expandedCard === prospect.id;
               
               return (
-                <motion.div
+                <SwipeDeleteWrapper 
                   key={prospect.id}
-                  layout
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ delay: idx * 0.05 }}
-                  className="bg-white rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow"
+                  roundedClass="rounded-2xl"
+                  onDelete={() => {
+                    const { deleteCase } = useAppStore.getState();
+                    deleteCase(prospect.id);
+                  }}
                 >
-                  <div className={`absolute top-0 bottom-0 left-0 w-1.5 ${currentStageDef.color.split(' ')[0]}`} />
-                  
-                  {/* Card Header (Clickable to expand) */}
-                  <div 
-                    className="p-4 flex justify-between items-start ml-2 cursor-pointer"
-                    onClick={(e) => toggleExpand(prospect.id, e)}
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="bg-white rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow z-10"
                   >
-                    <div>
-                      <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                        {prospect.name}
-                        {isExpanded ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
-                      </h3>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
-                          {prospect.type}
-                        </span>
-                        <span className="text-[10px] items-center px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 font-bold">
-                          {prospect.slides.length}/8 Slides
-                        </span>
-                        <span className="text-[10px] text-slate-400 font-medium">
-                          {formatDistanceToNow(prospect.createdAt, { addSuffix: true })}
-                        </span>
+                    <div className={`absolute top-0 bottom-0 left-0 w-1.5 ${currentStageDef.color.split(' ')[0]}`} />
+                    
+                    {/* Card Header (Clickable to expand) */}
+                    <div 
+                      className="p-4 flex justify-between items-start ml-2 cursor-pointer"
+                      onClick={(e) => toggleExpand(prospect.id, e)}
+                    >
+                      <div>
+                        <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                          {prospect.name}
+                          {isExpanded ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
+                            {prospect.type}
+                          </span>
+                          <span className="text-[10px] items-center px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 font-bold">
+                            {prospect.slides.length}/8 Slides
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Stage Select Dropdown */}
+                      <div className="relative z-10">
+                        <select 
+                          className="appearance-none bg-slate-50 border border-slate-200 text-slate-600 text-[10px] font-bold rounded-xl px-3 py-1.5 pr-8 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                          value={prospect.stage}
+                          onChange={(e) => updateCaseStage(prospect.id, parseInt(e.target.value))}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {PIPELINE_STAGES.map(s => (
+                            <option key={s.id} value={s.id}>
+                              {s.label}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                          <ArrowRightLeft size={12} />
+                        </div>
                       </div>
                     </div>
                     
-                    {/* Stage Select Dropdown */}
-                    <div className="relative z-10">
-                      <select 
-                        className="appearance-none bg-slate-50 border border-slate-200 text-slate-600 text-[10px] font-bold rounded-xl px-3 py-1.5 pr-8 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                        value={prospect.stage}
-                        onChange={(e) => updateCaseStage(prospect.id, parseInt(e.target.value))}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {PIPELINE_STAGES.map(s => (
-                          <option key={s.id} value={s.id}>
-                            {s.label}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                        <ArrowRightLeft size={12} />
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Expanded Content */}
-                  <AnimatePresence>
-                    {isExpanded && (
-                      <motion.div 
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="px-4 pb-4 ml-2 border-t border-slate-50 pt-3">
-                          {prospect.notes && (
-                            <p className="mb-4 text-xs text-slate-500 font-medium bg-slate-50 p-3 rounded-xl border border-slate-100">
-                              <span className="font-bold text-slate-700 block mb-1">Notes:</span>
-                              {prospect.notes}
-                            </p>
-                          )}
-                          
-                          <div className="mb-2.5">
-                            <h4 className="text-xs font-bold text-slate-800 tracking-wide uppercase">Slides Mastery</h4>
-                            <p className="text-[10px] text-slate-500 font-medium">แวะเช็คได้ว่าเล่าสไลด์ไหนไปแล้วบ้าง (อิงจาก 9 Slides)</p>
+                    {/* Expanded Content */}
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div 
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-4 pb-4 ml-2 border-t border-slate-50 pt-3">
+                            {prospect.notes && (
+                              <p className="mb-4 text-xs text-slate-500 font-medium bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                <span className="font-bold text-slate-700 block mb-1">Notes:</span>
+                                {prospect.notes}
+                              </p>
+                            )}
+                            
+                            <div className="mb-2.5">
+                              <h4 className="text-xs font-bold text-slate-800 tracking-wide uppercase">Slides Mastery</h4>
+                              <p className="text-[10px] text-slate-500 font-medium">แวะเช็คได้ว่าเล่าสไลด์ไหนไปแล้วบ้าง (อิงจาก 9 Slides)</p>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 gap-2">
+                              {SLIDES_LIST.map((slide) => {
+                                const isChecked = prospect.slides.includes(slide.id);
+                                return (
+                                  <button
+                                    key={slide.id}
+                                    onClick={() => toggleCaseSlide(prospect.id, slide.id)}
+                                    className={cn(
+                                      "flex items-center gap-3 p-2.5 rounded-xl text-left transition-colors border",
+                                      isChecked 
+                                        ? "bg-indigo-50/50 border-indigo-100 text-indigo-700" 
+                                        : "bg-white border-slate-100 text-slate-600 hover:bg-slate-50"
+                                    )}
+                                  >
+                                    {isChecked ? (
+                                      <CheckSquare size={18} className="text-indigo-600 shrink-0" />
+                                    ) : (
+                                      <Square size={18} className="text-slate-300 shrink-0" />
+                                    )}
+                                    <span className="text-xs font-bold">{slide.label}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </div>
-                          
-                          <div className="grid grid-cols-1 gap-2">
-                            {SLIDES_LIST.map((slide) => {
-                              const isChecked = prospect.slides.includes(slide.id);
-                              return (
-                                <button
-                                  key={slide.id}
-                                  onClick={() => toggleCaseSlide(prospect.id, slide.id)}
-                                  className={cn(
-                                    "flex items-center gap-3 p-2.5 rounded-xl text-left transition-colors border",
-                                    isChecked 
-                                      ? "bg-indigo-50/50 border-indigo-100 text-indigo-700" 
-                                      : "bg-white border-slate-100 text-slate-600 hover:bg-slate-50"
-                                  )}
-                                >
-                                  {isChecked ? (
-                                    <CheckSquare size={18} className="text-indigo-600 shrink-0" />
-                                  ) : (
-                                    <Square size={18} className="text-slate-300 shrink-0" />
-                                  )}
-                                  <span className="text-xs font-bold">{slide.label}</span>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                </SwipeDeleteWrapper>
               );
             })
           )}

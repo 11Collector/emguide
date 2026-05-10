@@ -7,6 +7,7 @@ import { Plus, Users, MapPin, ChevronLeft, ChevronRight, Briefcase, Edit2, Check
 import Image from "next/image";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/lib/utils";
+import { SwipeDeleteWrapper } from "@/components/swipe-delete-wrapper";
 
 export default function NewComersPage() {
   const { newComers, addNewComer, updateNewComer } = useAppStore();
@@ -349,55 +350,59 @@ export default function NewComersPage() {
             }
 
             return (
-              <motion.div
+              <SwipeDeleteWrapper 
                 key={comer.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.05 * i }}
-                className="bg-white/5 backdrop-blur-xl p-4 rounded-3xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] relative overflow-hidden group hover:bg-white/10 transition-colors"
+                onDelete={() => {
+                  const { deleteNewComer } = useAppStore.getState();
+                  deleteNewComer(comer.id);
+                }}
               >
-                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button onClick={() => startEditing(comer)} className="p-2 bg-black/40 hover:bg-black/60 rounded-xl text-slate-300 border border-white/10 transition-colors">
-                    <Edit2 size={14} />
-                  </button>
-                </div>
+                <div
+                  className="bg-[#0F172A] p-4 rounded-3xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] relative overflow-hidden group z-10"
+                >
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => startEditing(comer)} className="p-2 bg-black/40 hover:bg-black/60 rounded-xl text-slate-300 border border-white/10 transition-colors">
+                      <Edit2 size={14} />
+                    </button>
+                  </div>
 
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-500/20 to-violet-500/20 border border-pink-400/30 flex items-center justify-center text-pink-300 shadow-inner">
-                      <Users size={24} className="drop-shadow-lg" />
-                    </div>
-                    <div>
-                      <h3 className="font-extrabold text-white text-lg leading-tight drop-shadow-md">{comer.name}</h3>
-                      <div className="flex items-center gap-3 text-slate-400 text-[10px] mt-1 uppercase font-bold tracking-wider">
-                        {comer.job && (
-                          <span className="flex items-center gap-1 text-cyan-400 drop-shadow-md">
-                            <Briefcase size={10} /> {comer.job}
-                          </span>
-                        )}
-                        {comer.platform && (
-                          <span className="flex items-center gap-1 text-fuchsia-400 drop-shadow-md">
-                            <MapPin size={10} /> {comer.platform}
-                          </span>
-                        )}
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-500/20 to-violet-500/20 border border-pink-400/30 flex items-center justify-center text-pink-300 shadow-inner">
+                        <Users size={24} className="drop-shadow-lg" />
+                      </div>
+                      <div>
+                        <h3 className="font-extrabold text-white text-lg leading-tight drop-shadow-md">{comer.name}</h3>
+                        <div className="flex items-center gap-3 text-slate-400 text-[10px] mt-1 uppercase font-bold tracking-wider">
+                          {comer.job && (
+                            <span className="flex items-center gap-1 text-cyan-400 drop-shadow-md">
+                              <Briefcase size={10} /> {comer.job}
+                            </span>
+                          )}
+                          {comer.platform && (
+                            <span className="flex items-center gap-1 text-fuchsia-400 drop-shadow-md">
+                              <MapPin size={10} /> {comer.platform}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                
-                {comer.notes && (
-                  <div className="mb-4 text-xs text-slate-300 bg-black/20 p-3 rounded-xl border border-white/5 shadow-inner">
-                    {comer.notes}
+                  
+                  {comer.notes && (
+                    <div className="mb-4 text-xs text-slate-300 bg-black/20 p-3 rounded-xl border border-white/5 shadow-inner">
+                      {comer.notes}
+                    </div>
+                  )}
+                  
+                  <div className="grid grid-cols-4 gap-2 pt-3 border-t border-white/10">
+                    <ScoreBadge label="Money" score={comer.scores.money} />
+                    <ScoreBadge label="Active" score={comer.scores.active} />
+                    <ScoreBadge label="Friendly" score={comer.scores.friendly ?? (comer.scores as any).need ?? (comer.scores as any).nice ?? 0} />
+                    <ScoreBadge label="Relation" score={comer.scores.relation} />
                   </div>
-                )}
-                
-                <div className="grid grid-cols-4 gap-2 pt-3 border-t border-white/10">
-                  <ScoreBadge label="Money" score={comer.scores.money} />
-                  <ScoreBadge label="Active" score={comer.scores.active} />
-                  <ScoreBadge label="Friendly" score={comer.scores.friendly ?? (comer.scores as any).need ?? (comer.scores as any).nice ?? 0} />
-                  <ScoreBadge label="Relation" score={comer.scores.relation} />
                 </div>
-              </motion.div>
+              </SwipeDeleteWrapper>
             );
           })
         )}

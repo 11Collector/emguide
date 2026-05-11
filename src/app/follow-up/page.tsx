@@ -193,8 +193,8 @@ export default function FollowUpPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-center w-full mb-1">
-                          <div className="flex items-center gap-2 overflow-hidden mr-2">
-                            <h3 className="font-extrabold text-white text-base truncate">{c.name}</h3>
+                          <div className="flex items-center gap-2 mr-2">
+                            <h3 className="font-extrabold text-white text-base truncate max-w-[150px]">{c.name}</h3>
                             <button 
                               onClick={(e) => {
                                 e.stopPropagation();

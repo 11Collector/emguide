@@ -370,7 +370,7 @@ export default function NewComersPage() {
                 }}
               >
                 <div
-                  className="bg-[#0F172A] p-4 rounded-3xl border border-white/10 shadow-[0_8px_32_rgba(0,0,0,0.3)] relative overflow-hidden group z-10"
+                  className="bg-[#0F172A] p-4 rounded-3xl border border-white/10 shadow-[0_8px_32_rgba(0,0,0,0.3)] relative group z-10"
                 >
                   <div className="absolute top-4 right-4 z-20 flex gap-1">
                     <button onClick={() => startEditing(comer)} className="p-2 bg-black/40 hover:bg-black/60 rounded-xl text-slate-300 border border-white/10 transition-colors">

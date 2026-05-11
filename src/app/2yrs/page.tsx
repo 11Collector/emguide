@@ -275,8 +275,8 @@ export default function TwoYearsPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-center mb-1">
-                    <div className="flex items-center gap-2 pr-2 overflow-hidden">
-                      <h4 className="font-extrabold text-white text-base truncate">{c.name}</h4>
+                    <div className="flex items-center gap-2 pr-2">
+                      <h4 className="font-extrabold text-white text-base truncate max-w-[150px]">{c.name}</h4>
                       <button 
                         onClick={(e) => {
                           e.stopPropagation();

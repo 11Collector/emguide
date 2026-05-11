@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { Download, CheckSquare, Briefcase, Users, UserPlus, Sparkles, ChevronRight, Play } from "lucide-react";
+import { Download, CheckSquare, Briefcase, Users, UserPlus, Sparkles, ChevronRight, Play, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { PWAInstall } from "@/components/pwa-install";
@@ -39,8 +39,8 @@ const APP_FEATURES = [
   {
     href: "/2yrs",
     icon: <Briefcase size={20} className="text-indigo-400" />,
-    title: "Case Management",
-    desc: "บันทึกเคส Business Model และ 6W",
+    title: "EM6W / Business Model",
+    desc: "บันทึกและจัดการเคสรายบุคคล",
     color: "from-indigo-500/20 to-blue-500/20",
     border: "border-indigo-500/30"
   },
@@ -64,11 +64,23 @@ const APP_FEATURES = [
 
 export default function HomePage() {
   const [quote, setQuote] = useState("");
+  const [quoteKey, setQuoteKey] = useState(0);
+
   useEffect(() => {
     // Random quote based on the day of the year so it changes daily
     const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24);
     setQuote(QUOTES[dayOfYear % QUOTES.length]);
   }, []);
+
+  const handleShuffle = () => {
+    let newQuote;
+    do {
+      newQuote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+    } while (newQuote === quote && QUOTES.length > 1);
+    
+    setQuote(newQuote);
+    setQuoteKey(prev => prev + 1);
+  };
 
   return (
     <div className="min-h-[100dvh] pb-10 px-6 flex flex-col pt-8">
@@ -108,12 +120,32 @@ export default function HomePage() {
         <div className="absolute -top-6 -left-6 text-white/5">
           <Sparkles size={100} />
         </div>
-        <h2 className="text-xs font-bold text-blue-400 mb-3 uppercase tracking-widest flex items-center gap-2 relative z-10">
-          <Sparkles size={14} /> Mindset of the Day
-        </h2>
-        <p className="text-lg font-bold text-white leading-relaxed relative z-10 drop-shadow-md text-center px-2">
-          "{quote}"
-        </p>
+        
+        <div className="flex justify-between items-center mb-3 relative z-10">
+          <h2 className="text-xs font-bold text-blue-400 uppercase tracking-widest flex items-center gap-2">
+            <Sparkles size={14} /> Mindset of the Day
+          </h2>
+          <button 
+            onClick={handleShuffle}
+            className="text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-full transition-all active:scale-90"
+            aria-label="Shuffle quote"
+          >
+            <RefreshCw size={14} />
+          </button>
+        </div>
+        
+        <AnimatePresence mode="wait">
+          <motion.p 
+            key={quoteKey}
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -5 }}
+            transition={{ duration: 0.2 }}
+            className="text-lg font-bold text-white leading-relaxed relative z-10 drop-shadow-md text-center px-2 min-h-[56px] flex items-center justify-center"
+          >
+            "{quote}"
+          </motion.p>
+        </AnimatePresence>
       </motion.div>
 
       {/* App Features */}
@@ -130,17 +162,18 @@ export default function HomePage() {
           {APP_FEATURES.map((feat, idx) => (
             <motion.div
               key={idx}
+              className="h-full"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.4 + (idx * 0.1) }}
             >
-              <Link href={feat.href} className={`bg-gradient-to-br ${feat.color} backdrop-blur-sm border ${feat.border} rounded-2xl p-4 flex flex-col items-center text-center gap-3 hover:brightness-110 active:scale-[0.98] transition-all h-full`}>
-                <div className="bg-black/20 p-3 rounded-xl shadow-inner">
+              <Link href={feat.href} className={`bg-gradient-to-br ${feat.color} backdrop-blur-sm border ${feat.border} rounded-2xl p-4 flex flex-col items-center text-center gap-2 hover:brightness-110 active:scale-[0.98] transition-all h-full`}>
+                <div className="bg-black/20 p-3 rounded-xl shadow-inner shrink-0">
                   {feat.icon}
                 </div>
-                <div>
-                  <h4 className="font-bold text-white text-[13px] leading-tight">{feat.title}</h4>
-                  <p className="text-[10px] text-slate-300 mt-1 line-clamp-2">{feat.desc}</p>
+                <div className="flex-1 flex flex-col justify-center w-full mt-1">
+                  <h4 className="font-bold text-white text-[13px] leading-tight mb-1">{feat.title}</h4>
+                  <p className="text-[10px] text-slate-300 line-clamp-2 leading-snug">{feat.desc}</p>
                 </div>
               </Link>
             </motion.div>
@@ -188,14 +221,14 @@ export default function HomePage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.9 + (idx * 0.1) }}
-              className={`bg-gradient-to-br ${vid.color} backdrop-blur-sm border ${vid.border} rounded-2xl p-4 flex flex-col items-center text-center gap-3 hover:brightness-110 active:scale-[0.98] transition-all h-full`}
+              className={`bg-gradient-to-br ${vid.color} backdrop-blur-sm border ${vid.border} rounded-2xl p-4 flex flex-col items-center text-center gap-2 hover:brightness-110 active:scale-[0.98] transition-all h-full`}
             >
-              <div className="bg-red-500/20 p-3 rounded-xl shadow-inner text-red-400">
+              <div className="bg-red-500/20 p-3 rounded-xl shadow-inner text-red-400 shrink-0">
                 <Play size={20} fill="currentColor" />
               </div>
-              <div>
-                <h4 className="font-bold text-white text-[13px] leading-tight">{vid.title}</h4>
-                <p className="text-[9px] text-slate-300 mt-1 font-medium uppercase tracking-wider">{vid.speaker}</p>
+              <div className="flex-1 flex flex-col justify-center w-full mt-1">
+                <h4 className="font-bold text-white text-[13px] leading-tight mb-1">{vid.title}</h4>
+                <p className="text-[10px] text-slate-300 font-medium uppercase tracking-wider line-clamp-2 leading-snug">{vid.speaker}</p>
               </div>
             </motion.a>
           ))}

@@ -34,6 +34,7 @@ export interface NewComer {
 export interface DailyActivity {
   [dateStr: string]: {
     tasks: string[];
+    taskCounts?: Record<string, number>;
   };
 }
 
@@ -50,6 +51,8 @@ interface AppState {
   toggleCaseSlide: (caseId: string, slideId: string) => void;
   setPV: (amount: number) => void;
   toggleDailyTask: (dateStr: string, taskId: string) => void;
+  incrementDailyTask: (dateStr: string, taskId: string, delta: number) => void;
+  getTaskCount: (dateStr: string, taskId: string) => number;
   getTasksForDate: (dateStr: string) => string[];
   getStreak: (totalRequiredTasks: number) => number;
   toggleReadBook: (bookId: number) => void;
@@ -170,7 +173,8 @@ export const useAppStore = create<AppState>()(
         };
       }),
       toggleDailyTask: (dateStr, taskId) => set((state) => {
-        const currentTasks = state.dailyStatus[dateStr]?.tasks || [];
+        const currentData = state.dailyStatus[dateStr] || { tasks: [], taskCounts: {} };
+        const currentTasks = currentData.tasks || [];
         const isCompleted = currentTasks.includes(taskId);
         
         const newTasks = isCompleted 
@@ -180,16 +184,48 @@ export const useAppStore = create<AppState>()(
         const nextState = {
           dailyStatus: {
             ...state.dailyStatus,
-            [dateStr]: { tasks: newTasks }
+            [dateStr]: { ...currentData, tasks: newTasks }
           }
         };
 
         if (db) {
-           setDoc(doc(db, "dailyStatus", dateStr), { tasks: newTasks }).catch(e => console.error(e));
+           setDoc(doc(db, "dailyStatus", dateStr), nextState.dailyStatus[dateStr], { merge: true }).catch(e => console.error(e));
         }
 
         return nextState;
       }),
+      incrementDailyTask: (dateStr, taskId, delta) => set((state) => {
+        const currentData = state.dailyStatus[dateStr] || { tasks: [], taskCounts: {} };
+        const counts = currentData.taskCounts || {};
+        const newCount = Math.max(0, (counts[taskId] || 0) + delta);
+        
+        let newTasks = [...(currentData.tasks || [])];
+        if (newCount > 0 && !newTasks.includes(taskId)) {
+          newTasks.push(taskId);
+        } else if (newCount === 0 && newTasks.includes(taskId)) {
+          newTasks = newTasks.filter(t => t !== taskId);
+        }
+        
+        const nextState = {
+          dailyStatus: {
+            ...state.dailyStatus,
+            [dateStr]: { 
+              ...currentData, 
+              tasks: newTasks,
+              taskCounts: { ...counts, [taskId]: newCount }
+            }
+          }
+        };
+
+        if (db) {
+           setDoc(doc(db, "dailyStatus", dateStr), nextState.dailyStatus[dateStr], { merge: true }).catch(e => console.error(e));
+        }
+
+        return nextState;
+      }),
+      getTaskCount: (dateStr, taskId) => {
+        return get().dailyStatus[dateStr]?.taskCounts?.[taskId] || 0;
+      },
       getTasksForDate: (dateStr) => {
         return get().dailyStatus[dateStr]?.tasks || [];
       },

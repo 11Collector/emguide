@@ -18,7 +18,8 @@ import {
   Users,
   LineChart,
   BarChart3,
-  X
+  X,
+  Sparkles
 } from "lucide-react";
 import Image from "next/image";
 import { useAppStore } from "@/store/useAppStore";
@@ -30,53 +31,67 @@ const DAILY_TASKS = [
     color: "from-blue-500 via-cyan-400 to-teal-400",
     glow: "bg-cyan-500/20",
     tasks: [
-      { id: "myself-product", label: "ใช้สินค้า", icon: ShoppingBag },
-      { id: "myself-link", label: "ฟัง Link", icon: Headphones },
-      { id: "myself-book", label: "อ่านหนังสือ 15 หน้า", icon: BookOpen },
+      { id: "myself-product", label: "ใช้สินค้า", icon: ShoppingBag, isCounter: false },
+      { id: "myself-link", label: "ฟัง Link", icon: Headphones, isCounter: false },
+      { id: "myself-book", label: "อ่านหนังสือ 15 หน้า", icon: BookOpen, isCounter: false },
     ]
   },
   {
     category: "My Social Media",
-    color: "from-fuchsia-500 via-pink-500 to-rose-400", // Holo Pink
+    color: "from-fuchsia-500 via-pink-500 to-rose-400",
     glow: "bg-fuchsia-500/20",
     tasks: [
-      { id: "social-post", label: "Post", icon: ImageIcon },
-      { id: "social-add", label: "เพิ่มเพื่อน", icon: UserPlus },
-      { id: "social-reply", label: "Comment / Reply Story", icon: MessageCircle },
-      { id: "social-hbd", label: "HBD ใน Inbox", icon: Gift },
+      { id: "social-post", label: "Post", icon: ImageIcon, isCounter: false },
+      { id: "social-add", label: "เพิ่มเพื่อน", icon: UserPlus, isCounter: false },
+      { id: "social-reply", label: "Comment / Reply Story", icon: MessageCircle, isCounter: false },
+      { id: "social-hbd", label: "HBD ใน Inbox", icon: Gift, isCounter: false },
     ]
   },
   {
     category: "My Business",
-    color: "from-indigo-500 via-purple-500 to-fuchsia-500", // Holo Purple
+    color: "from-indigo-500 via-purple-500 to-fuchsia-500",
     glow: "bg-purple-500/20",
     tasks: [
-      { id: "biz-approach", label: "ทักเข้าเรื่อง (8 นัดได้ 1 เคส)", icon: MessageSquareText },
-      { id: "biz-model", label: "EM6W / Model", icon: Briefcase },
-      { id: "biz-follow", label: "Follow up Sponsor", icon: Users },
-      { id: "biz-analyze", label: "วิเคราะห์งาน / Follow up Sheet", icon: LineChart },
+      { id: "biz-approach", label: "ทักเข้าเรื่อง", icon: MessageSquareText, isCounter: true },
+      { id: "biz-model", label: "EM6W / Business Model", icon: Briefcase, isCounter: false },
+      { id: "biz-follow", label: "Follow up Sponsor", icon: Users, isCounter: false },
+      { id: "biz-analyze", label: "วิเคราะห์งาน / Follow up Sheet", icon: LineChart, isCounter: false },
     ]
   }
 ];
 
 export default function DailyChecklist() {
-  const { dailyStatus, getTasksForDate, toggleDailyTask } = useAppStore();
+  const { dailyStatus, getTasksForDate, toggleDailyTask, incrementDailyTask, getTaskCount } = useAppStore();
   const [isClient, setIsClient] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
   
   const now = new Date();
   const todayStr = format(now, "yyyy-MM-dd");
+
+  const completedTasks = getTasksForDate(todayStr);
+  const totalTasksCount = DAILY_TASKS.reduce((acc, cat) => acc + cat.tasks.length, 0);
+  const progress = Math.round((completedTasks.length / totalTasksCount) * 100);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  if (!isClient) return null;
+  useEffect(() => {
+    if (isClient) {
+      const celebratedKey = `celebrated_${todayStr}`;
+      if (progress === 100) {
+        if (!localStorage.getItem(celebratedKey)) {
+          setShowCelebration(true);
+          localStorage.setItem(celebratedKey, "true");
+        }
+      } else {
+        localStorage.removeItem(celebratedKey);
+      }
+    }
+  }, [progress, todayStr, isClient]);
 
-  const completedTasks = getTasksForDate(todayStr);
-  
-  const totalTasksCount = DAILY_TASKS.reduce((acc, cat) => acc + cat.tasks.length, 0);
-  const progress = Math.round((completedTasks.length / totalTasksCount) * 100);
+  if (!isClient) return null;
 
   // Calculate monthly summary
   const start = startOfMonth(now);
@@ -184,47 +199,115 @@ export default function DailyChecklist() {
             <div className="space-y-3 relative z-10">
               {category.tasks.map((task) => {
                 const isCompleted = completedTasks.includes(task.id);
+                const count = getTaskCount(todayStr, task.id);
+                const showCounter = task.isCounter;
+                
                 return (
-                  <button
+                  <div
                     key={task.id}
-                    onClick={() => toggleDailyTask(todayStr, task.id)}
                     className={cn(
                       "w-full flex items-center justify-between p-3.5 rounded-2xl transition-all duration-300 group",
-                      isCompleted 
+                      isCompleted || (showCounter && count > 0)
                         ? "bg-white/5 border border-white/5 shadow-inner" 
                         : "bg-[#0F172A]/40 border border-white/10 hover:bg-white/5 hover:border-white/20 hover:shadow-lg"
                     )}
                   >
-                    <div className="flex items-center gap-3">
+                    <button 
+                      onClick={() => !showCounter && toggleDailyTask(todayStr, task.id)}
+                      className={cn("flex items-center gap-3 flex-1 text-left", showCounter && "cursor-default")}
+                    >
                       <div className={cn(
                         "p-2 rounded-xl transition-all duration-300",
-                        isCompleted 
+                        isCompleted || (showCounter && count > 0)
                           ? cn(category.glow, "text-white shadow-lg") 
                           : "bg-black/20 text-slate-400 group-hover:text-slate-300"
                       )}>
                         <task.icon size={16} />
                       </div>
                       <span className={cn(
-                        "text-sm font-bold transition-all text-left",
-                        isCompleted ? "text-slate-400 line-through decoration-slate-500/50" : "text-slate-200 group-hover:text-white"
+                        "text-sm font-bold transition-all",
+                        (isCompleted || (showCounter && count > 0)) && !showCounter ? "text-slate-400 line-through decoration-slate-500/50" : "text-slate-200 group-hover:text-white"
                       )}>
                         {task.label}
                       </span>
-                    </div>
-                    <div>
-                      {isCompleted ? (
-                        <CheckCircle2 size={22} className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
-                      ) : (
-                        <Circle size={22} className="text-slate-600 group-hover:text-slate-400 transition-colors" />
-                      )}
-                    </div>
-                  </button>
+                    </button>
+                    
+                    {showCounter ? (
+                      <div className="flex items-center gap-3 ml-2 bg-black/40 rounded-xl p-1 border border-white/5">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); incrementDailyTask(todayStr, task.id, -1); }}
+                          className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all"
+                        >
+                          -
+                        </button>
+                        <span className="w-4 text-center text-sm font-bold text-white">{count}</span>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); incrementDailyTask(todayStr, task.id, 1); }}
+                          className="w-7 h-7 flex items-center justify-center rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg active:scale-95 transition-all"
+                        >
+                          +
+                        </button>
+                      </div>
+                    ) : (
+                      <button onClick={() => toggleDailyTask(todayStr, task.id)}>
+                        {isCompleted ? (
+                          <CheckCircle2 size={22} className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
+                        ) : (
+                          <Circle size={22} className="text-slate-600 hover:text-slate-400 transition-colors" />
+                        )}
+                      </button>
+                    )}
+                  </div>
                 );
               })}
             </div>
           </motion.div>
         ))}
       </div>
+
+      {/* Celebration Modal */}
+      <AnimatePresence>
+        {showCelebration && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-[#030712]/80 backdrop-blur-md p-6"
+            onClick={() => setShowCelebration(false)}
+          >
+            <motion.div 
+              initial={{ scale: 0.8, y: 50, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.8, y: 50, opacity: 0 }}
+              transition={{ type: "spring", damping: 20, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm rounded-[32px] bg-gradient-to-br from-indigo-900/90 via-purple-900/90 to-[#0F172A] border border-fuchsia-500/30 shadow-[0_0_80px_rgba(217,70,239,0.3)] p-8 text-center relative overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-fuchsia-500/20 via-transparent to-transparent pointer-events-none" />
+              
+              <div className="mx-auto w-20 h-20 bg-gradient-to-tr from-fuchsia-500 to-cyan-400 rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(217,70,239,0.5)] mb-6 relative z-10">
+                <Sparkles size={40} className="text-white" />
+              </div>
+              
+              <h2 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-fuchsia-200 mb-3 relative z-10">
+                ยอดเยี่ยมมาก!
+              </h2>
+              
+              <p className="text-slate-300 text-sm font-medium leading-relaxed mb-8 relative z-10">
+                คุณทำตามระบบสำเร็จไป 1 วันแล้ว<br/>
+                <span className="text-fuchsia-300 font-bold">2 ปีต่อเนื่องสำเร็จแน่นอน 🎯</span>
+              </p>
+              
+              <button 
+                onClick={() => setShowCelebration(false)}
+                className="w-full py-4 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 text-white font-bold transition-all active:scale-95 relative z-10"
+              >
+                ลุยต่อเลย!
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Holo Monthly Summary Modal */}
       <AnimatePresence>

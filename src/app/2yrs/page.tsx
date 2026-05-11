@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { format, startOfMonth, endOfMonth, subMonths, addMonths } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Briefcase, TrendingUp, User, Target, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Briefcase, TrendingUp, User, Target, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import Image from "next/image";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/lib/utils";
@@ -17,17 +17,34 @@ export default function TwoYearsPage() {
   const [pvInput, setPvInput] = useState("");
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  if (!isClient) return null;
+  const [showCelebration, setShowCelebration] = useState(false);
 
   // Month filtering
   const monthStart = startOfMonth(currentDate).getTime();
   const monthEnd = endOfMonth(currentDate).getTime();
-
   const currentMonthCases = cases.filter(c => c.createdAt >= monthStart && c.createdAt <= monthEnd);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (isClient) {
+      const monthStr = format(currentDate, "yyyy-MM");
+      const celebratedKey = `case_celebration_${monthStr}`;
+      
+      if (currentMonthCases.length >= 15 && totalPV >= 30000) {
+        if (!localStorage.getItem(celebratedKey)) {
+          setShowCelebration(true);
+          localStorage.setItem(celebratedKey, "true");
+        }
+      } else {
+        localStorage.removeItem(celebratedKey);
+      }
+    }
+  }, [currentMonthCases.length, totalPV, currentDate, isClient]);
+
+  if (!isClient) return null;
   
   const handleAddCase = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +68,7 @@ export default function TwoYearsPage() {
       setPvInput("");
     }
   };
+
 
   return (
     <div className="p-6 min-h-full flex flex-col text-slate-50 relative overflow-hidden">
@@ -257,6 +275,50 @@ export default function TwoYearsPage() {
           ))
         )}
       </div>
+
+      {/* Celebration Modal */}
+      <AnimatePresence>
+        {showCelebration && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-[#030712]/80 backdrop-blur-md p-6"
+            onClick={() => setShowCelebration(false)}
+          >
+            <motion.div 
+              initial={{ scale: 0.8, y: 50, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.8, y: 50, opacity: 0 }}
+              transition={{ type: "spring", damping: 20, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm rounded-[32px] bg-gradient-to-br from-indigo-900/90 via-blue-900/90 to-[#0F172A] border border-cyan-500/30 shadow-[0_0_80px_rgba(34,211,238,0.3)] p-8 text-center relative overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-500/20 via-transparent to-transparent pointer-events-none" />
+              
+              <div className="mx-auto w-20 h-20 bg-gradient-to-tr from-cyan-500 to-blue-400 rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(34,211,238,0.5)] mb-6 relative z-10">
+                <Sparkles size={40} className="text-white" />
+              </div>
+              
+              <h2 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-cyan-200 mb-3 relative z-10">
+                ยอดเยี่ยมมาก!
+              </h2>
+              
+              <p className="text-slate-300 text-sm font-medium leading-relaxed mb-8 relative z-10">
+                เดือนนี้คุณทำถึงตามระบบแล้ว<br/>
+                <span className="text-cyan-300 font-bold">GO A70 ทำได้แน่นอน 💎</span>
+              </p>
+              
+              <button 
+                onClick={() => setShowCelebration(false)}
+                className="w-full py-4 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 text-white font-bold transition-all active:scale-95 relative z-10"
+              >
+                ลุยต่อเลย!
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

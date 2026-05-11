@@ -51,10 +51,19 @@ export default function NewComersPage() {
       const a = Number(c.scores?.active ?? 0);
       const f = Number(c.scores?.friendly ?? (c.scores as any)?.need ?? (c.scores as any)?.nice ?? 0);
       const r = Number(c.scores?.relation ?? 0);
-      
       return m >= 7 && a >= 7 && f >= 7 && r >= 7;
     });
   }
+
+  // Sort by Total Score (Descending)
+  currentMonthComers.sort((a, b) => {
+    const getScore = (c: any) => 
+      Number(c.scores?.money ?? 0) + 
+      Number(c.scores?.active ?? 0) + 
+      Number(c.scores?.friendly ?? (c.scores as any)?.need ?? (c.scores as any)?.nice ?? 0) + 
+      Number(c.scores?.relation ?? 0);
+    return getScore(b) - getScore(a);
+  });
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
@@ -358,9 +367,9 @@ export default function NewComersPage() {
                 }}
               >
                 <div
-                  className="bg-[#0F172A] p-4 rounded-3xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] relative overflow-hidden group z-10"
+                  className="bg-[#0F172A] p-4 rounded-3xl border border-white/10 shadow-[0_8px_32_rgba(0,0,0,0.3)] relative overflow-hidden group z-10"
                 >
-                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-20">
                     <button onClick={() => startEditing(comer)} className="p-2 bg-black/40 hover:bg-black/60 rounded-xl text-slate-300 border border-white/10 transition-colors">
                       <Edit2 size={14} />
                     </button>
@@ -372,7 +381,17 @@ export default function NewComersPage() {
                         <Users size={24} className="drop-shadow-lg" />
                       </div>
                       <div>
-                        <h3 className="font-extrabold text-white text-lg leading-tight drop-shadow-md">{comer.name}</h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-extrabold text-white text-lg leading-tight drop-shadow-md">{comer.name}</h3>
+                          <div className="px-2 py-0.5 rounded-md bg-pink-500/20 border border-pink-500/30 text-[9px] font-black text-pink-400 uppercase tracking-[0.05em]">
+                            TOTAL : {
+                              Number(comer.scores?.money ?? 0) + 
+                              Number(comer.scores?.active ?? 0) + 
+                              Number(comer.scores?.friendly ?? (comer.scores as any)?.need ?? (comer.scores as any)?.nice ?? 0) + 
+                              Number(comer.scores?.relation ?? 0)
+                            }
+                          </div>
+                        </div>
                         <div className="flex items-center gap-3 text-slate-400 text-[10px] mt-1 uppercase font-bold tracking-wider">
                           {comer.job && (
                             <span className="flex items-center gap-1 text-cyan-400 drop-shadow-md">

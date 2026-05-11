@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { format, startOfMonth, endOfMonth, subMonths, addMonths } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, CheckCircle2, Circle, ChevronDown, ChevronUp, User, ChevronLeft, ChevronRight, Briefcase, ShoppingBag, Edit2, Check, X } from "lucide-react";
+import { Plus, CheckCircle2, Circle, ChevronDown, ChevronUp, User, ChevronLeft, ChevronRight, Briefcase, ShoppingBag, Edit2, Check, X, Star } from "lucide-react";
 import Image from "next/image";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/lib/utils";
@@ -13,7 +13,7 @@ const BUSINESS_STEPS = ["BM", "BI", "2YRS", "UNIQUENESS", "CHECKIN", "5STEP"];
 const PRODUCT_STEPS = ["6W", "ARTISTRY", "ESPRING", "HOUSEHOLD", "SKY", "DETOX"];
 
 export default function FollowUpPage() {
-  const { cases, updateCaseStep, updateCaseNotes } = useAppStore();
+  const { cases, updateCaseStep, updateCaseNotes, toggleCaseFavorite } = useAppStore();
   const [isClient, setIsClient] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -35,6 +35,9 @@ export default function FollowUpPage() {
   // Sort by completion percentage (descending)
   const totalSteps = BUSINESS_STEPS.length + PRODUCT_STEPS.length;
   const sortedCases = [...currentMonthCases].sort((a, b) => {
+    if (a.isFavorite && !b.isFavorite) return -1;
+    if (!a.isFavorite && b.isFavorite) return 1;
+    
     const aCompleted = a.completedSteps?.length || 0;
     const bCompleted = b.completedSteps?.length || 0;
     return bCompleted - aCompleted;
@@ -175,9 +178,9 @@ export default function FollowUpPage() {
                   )}
                 >
                   {/* Header */}
-                  <button 
+                  <div 
                     onClick={() => toggleExpand(c.id)}
-                    className="w-full p-4 flex items-center justify-between text-left relative overflow-hidden"
+                    className="w-full p-4 flex items-center justify-between text-left relative overflow-hidden cursor-pointer"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-teal-500/5" />
                     
@@ -190,7 +193,26 @@ export default function FollowUpPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-center w-full mb-1">
-                          <h3 className="font-extrabold text-white text-base truncate">{c.name}</h3>
+                          <div className="flex items-center gap-2 overflow-hidden mr-2">
+                            <h3 className="font-extrabold text-white text-base truncate">{c.name}</h3>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleCaseFavorite(c.id);
+                              }}
+                              className="transition-all active:scale-90 shrink-0"
+                            >
+                              <Star 
+                                size={16} 
+                                className={cn(
+                                  "transition-colors",
+                                  c.isFavorite 
+                                    ? "fill-yellow-400 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]" 
+                                    : "text-slate-600 hover:text-slate-400"
+                                )} 
+                              />
+                            </button>
+                          </div>
                           <span className="text-emerald-400 font-extrabold text-sm drop-shadow-md">{progress}%</span>
                         </div>
                         <p className="text-slate-400 text-xs truncate max-w-[90%] font-medium">
@@ -198,8 +220,10 @@ export default function FollowUpPage() {
                         </p>
                       </div>
                     </div>
-                    <div className="text-slate-400 relative z-10 shrink-0">
-                      {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                    <div className="flex items-center gap-2 relative z-10 shrink-0">
+                      <div className="text-slate-400">
+                        {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                      </div>
                     </div>
                     
                     {/* Progress bar background in header */}
@@ -209,7 +233,7 @@ export default function FollowUpPage() {
                         style={{ width: `${progress}%` }} 
                       />
                     </div>
-                  </button>
+                  </div>
 
                   {/* Expanded Content */}
                   <AnimatePresence>

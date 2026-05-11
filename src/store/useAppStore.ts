@@ -14,6 +14,7 @@ export interface CaseRecord {
   stage?: number;
   slides?: string[];
   completedSteps?: string[];
+  isFavorite?: boolean;
 }
 
 export interface NewComer {
@@ -29,6 +30,7 @@ export interface NewComer {
     relation: number;
   };
   createdAt: number;
+  isFavorite?: boolean;
 }
 
 export interface DailyActivity {
@@ -61,7 +63,9 @@ interface AppState {
   addNewComer: (comer: Omit<NewComer, "id" | "createdAt">) => void;
   updateNewComer: (id: string, updates: Partial<NewComer>) => void;
   deleteNewComer: (id: string) => void;
+  toggleNewComerFavorite: (id: string) => void;
   deleteCase: (id: string) => void;
+  toggleCaseFavorite: (id: string) => void;
   celebratedDays: Record<string, boolean>;
   setCelebratedDay: (dateStr: string, isCelebrated: boolean) => void;
 }
@@ -112,6 +116,16 @@ export const useAppStore = create<AppState>()(
         if (db) {
           const { deleteDoc } = require('firebase/firestore');
           deleteDoc(doc(db, "newComers", id)).catch((e: any) => console.error(e));
+        }
+        return { newComers: updatedComers };
+      }),
+      toggleNewComerFavorite: (id) => set((state) => {
+        const updatedComers = (state.newComers || []).map(c => 
+          c.id === id ? { ...c, isFavorite: !c.isFavorite } : c
+        );
+        const target = updatedComers.find(c => c.id === id);
+        if (db && target) {
+          setDoc(doc(db, "newComers", id), target, { merge: true }).catch(e => console.error(e));
         }
         return { newComers: updatedComers };
       }),
@@ -179,6 +193,16 @@ export const useAppStore = create<AppState>()(
         if (db) {
           const { deleteDoc } = require('firebase/firestore');
           deleteDoc(doc(db, "cases", id)).catch((e: any) => console.error(e));
+        }
+        return { cases: updatedCases };
+      }),
+      toggleCaseFavorite: (id) => set((state) => {
+        const updatedCases = state.cases.map(c => 
+          c.id === id ? { ...c, isFavorite: !c.isFavorite } : c
+        );
+        const targetCase = updatedCases.find(c => c.id === id);
+        if (db && targetCase) {
+          setDoc(doc(db, "cases", id), targetCase, { merge: true }).catch(e => console.error(e));
         }
         return { cases: updatedCases };
       }),

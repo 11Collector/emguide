@@ -3,14 +3,14 @@
 import { useEffect, useState } from "react";
 import { format, startOfMonth, endOfMonth, subMonths, addMonths } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Briefcase, TrendingUp, User, Target, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { Plus, Briefcase, TrendingUp, User, Target, ChevronLeft, ChevronRight, Sparkles, Star } from "lucide-react";
 import Image from "next/image";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/lib/utils";
 import { SwipeDeleteWrapper } from "@/components/swipe-delete-wrapper";
 
 export default function TwoYearsPage() {
-  const { cases, monthlyPV, addCase, setPV, celebratedDays, setCelebratedDay } = useAppStore();
+  const { cases, monthlyPV, addCase, setPV, celebratedDays, setCelebratedDay, toggleCaseFavorite } = useAppStore();
   const [isClient, setIsClient] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newCase, setNewCase] = useState({ name: "", type: "BM", notes: "" });
@@ -22,7 +22,16 @@ export default function TwoYearsPage() {
   // Month filtering
   const monthStart = startOfMonth(currentDate).getTime();
   const monthEnd = endOfMonth(currentDate).getTime();
-  const currentMonthCases = cases.filter(c => c.createdAt >= monthStart && c.createdAt <= monthEnd);
+  const currentMonthCases = cases
+    .filter(c => c.createdAt >= monthStart && c.createdAt <= monthEnd)
+    .sort((a, b) => {
+      if (a.isFavorite && !b.isFavorite) return -1;
+      if (!a.isFavorite && b.isFavorite) return 1;
+      
+      const aCompleted = a.completedSteps?.length || 0;
+      const bCompleted = b.completedSteps?.length || 0;
+      return bCompleted - aCompleted;
+    });
   
   const monthStr = format(currentDate, "yyyy-MM");
   const currentMonthPV = monthlyPV?.[monthStr] || 0;
@@ -266,7 +275,26 @@ export default function TwoYearsPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-center mb-1">
-                    <h4 className="font-extrabold text-white text-base truncate pr-2">{c.name}</h4>
+                    <div className="flex items-center gap-2 pr-2 overflow-hidden">
+                      <h4 className="font-extrabold text-white text-base truncate">{c.name}</h4>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleCaseFavorite(c.id);
+                        }}
+                        className="transition-all active:scale-90"
+                      >
+                        <Star 
+                          size={16} 
+                          className={cn(
+                            "transition-colors",
+                            c.isFavorite 
+                              ? "fill-yellow-400 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]" 
+                              : "text-slate-600 hover:text-slate-400"
+                          )} 
+                        />
+                      </button>
+                    </div>
                     <span className={cn(
                       "text-[9px] font-extrabold px-2 py-1 rounded-full uppercase shrink-0",
                       c.type === 'BM' ? "bg-blue-500 text-white shadow-[0_0_10px_rgba(59,130,246,0.5)]" : "bg-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.5)]"

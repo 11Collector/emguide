@@ -60,6 +60,17 @@ const DAILY_TASKS = [
   }
 ];
 
+const SUMMARY_QUOTES = [
+  {
+    h4: "ความเป็นเราพาเรามาได้เท่านี้\nอยากสำเร็จกว่านี้ต้องเปลี่ยนแปลงตัวเอง",
+    p: "\"What Got You Here Won't Get You There\""
+  },
+  {
+    h4: "ความฝันที่ยิ่งใหญ่\nเอาชนะได้ทุกปัญหาอุปสรรค",
+    p: "\"Big Dreams Overcome Small Obstacles\""
+  }
+];
+
 export default function DailyChecklist() {
   const { dailyStatus, getTasksForDate, toggleDailyTask, incrementDailyTask, getTaskCount, celebratedDays, setCelebratedDay } = useAppStore();
   const [isClient, setIsClient] = useState(false);
@@ -98,20 +109,52 @@ export default function DailyChecklist() {
   // Calculate monthly summary
   const start = startOfMonth(now);
   const end = endOfMonth(now);
-  const daysPassedInMonth = now.getDate(); // How many days have passed this month
+  const daysPassedInMonth = now.getDate();
   
   const taskCounts: Record<string, number> = {};
-  let totalDaysActive = 0;
+  const categoryStats: Record<string, { completed: number, total: number }> = {};
+  let totalTasksDone = 0;
+  let activeDays = 0;
 
-  Object.entries(dailyStatus).forEach(([dateStr, data]) => {
-    const date = parseISO(dateStr);
-    if (isWithinInterval(date, { start, end })) {
-      totalDaysActive++;
-      data.tasks.forEach(taskId => {
+  // Initialize category stats
+  DAILY_TASKS.forEach(cat => {
+    categoryStats[cat.category] = { completed: 0, total: cat.tasks.length * daysPassedInMonth };
+  });
+
+  const activityData: { date: string, count: number, percent: number }[] = [];
+  
+  const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000);
+  const summaryQuote = SUMMARY_QUOTES[dayOfYear % SUMMARY_QUOTES.length];
+
+  for (let i = 1; i <= daysPassedInMonth; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth(), i);
+    const dStr = format(d, "yyyy-MM-dd");
+    const tasks = getTasksForDate(dStr);
+    const count = tasks.length;
+    const percent = Math.round((count / totalTasksCount) * 100);
+    
+    activityData.push({ date: dStr, count, percent });
+    
+    if (count > 0) {
+      activeDays++;
+      totalTasksDone += count;
+      
+      tasks.forEach(taskId => {
         taskCounts[taskId] = (taskCounts[taskId] || 0) + 1;
+        
+        // Find which category this task belongs to
+        DAILY_TASKS.forEach(cat => {
+          if (cat.tasks.some(t => t.id === taskId)) {
+            categoryStats[cat.category].completed++;
+          }
+        });
       });
     }
-  });
+  }
+
+  const avgCompletion = activeDays > 0 ? Math.round((totalTasksDone / (totalTasksCount * daysPassedInMonth)) * 100) : 0;
+  const streak = useAppStore.getState().getStreak(totalTasksCount); // Use the store's streak logic (100% completion)
+  const currentStreak = useAppStore.getState().getStreak(1); // Any task done counts as active for streak in some contexts, but let's use 100% for prestige
 
   return (
     <div className="p-6 min-h-full flex flex-col text-slate-50 relative overflow-hidden">
@@ -311,80 +354,222 @@ export default function DailyChecklist() {
         )}
       </AnimatePresence>
 
-      {/* Holo Monthly Summary Modal */}
+      {/* Holo Monthly Summary Modal - Revamped to Dashboard */}
       <AnimatePresence>
         {showSummary && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-[#030712]/80 backdrop-blur-lg p-4"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-[#030712]/90 backdrop-blur-xl p-4"
             onClick={() => setShowSummary(false)}
           >
             <motion.div 
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
+              initial={{ y: 100, opacity: 0, scale: 0.9 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 100, opacity: 0, scale: 0.9 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-sm rounded-[32px] bg-[#0F172A] border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.8)] p-6 max-h-[85vh] overflow-y-auto relative"
+              className="w-full max-w-md rounded-[40px] bg-[#0F172A]/80 border border-white/10 shadow-[0_20px_80px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col max-h-[90vh] relative"
             >
-              {/* Minimal Modal Header */}
-              <div className="flex justify-between items-start mb-6 border-b border-white/5 pb-4">
+              {/* Background Glows for Modal */}
+              <div className="absolute top-[-10%] right-[-10%] w-40 h-40 bg-fuchsia-600/20 blur-[60px] pointer-events-none" />
+              <div className="absolute bottom-[-10%] left-[-10%] w-40 h-40 bg-cyan-600/20 blur-[60px] pointer-events-none" />
+
+              {/* Modal Header */}
+              <div className="p-6 pb-0 flex justify-between items-center relative z-10">
                 <div>
-                  <h2 className="text-xl font-extrabold text-white">
-                    สรุปภาพรวมรายเดือน
-                  </h2>
-                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1">
-                    {format(now, "MMMM")} • ผ่านมาแล้ว {daysPassedInMonth} วัน
+                  <h2 className="text-2xl font-black text-white tracking-tight">สรุปภาพรวมรายเดือน</h2>
+                  <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] mt-1">
+                    {format(now, "MMMM yyyy")}
                   </p>
                 </div>
-                <button onClick={() => setShowSummary(false)} className="p-1.5 bg-white/5 hover:bg-white/10 rounded-full text-slate-400 transition-colors">
-                  <X size={18} />
+                <button 
+                  onClick={() => setShowSummary(false)} 
+                  className="w-10 h-10 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full flex items-center justify-center text-slate-400 transition-all active:scale-95"
+                >
+                  <X size={20} />
                 </button>
               </div>
 
-              <div className="space-y-6">
-                {DAILY_TASKS.map((category) => (
-                  <div key={category.category}>
-                    <h3 className={cn(
-                      "text-[10px] font-bold uppercase tracking-widest mb-3 flex items-center gap-2",
-                      category.color.includes("fuchsia") ? "text-pink-400" : category.color.includes("blue") ? "text-cyan-400" : "text-purple-400"
-                    )}>
-                      {category.category}
-                    </h3>
-                    
-                    <div className="space-y-3">
-                      {category.tasks.map((task) => {
-                        const count = taskCounts[task.id] || 0;
-                        const percent = Math.min(Math.round((count / daysPassedInMonth) * 100), 100);
-                        
-                        return (
-                          <div key={task.id} className="bg-black/20 rounded-2xl p-3 border border-white/5">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center gap-2">
-                                <task.icon size={12} className="text-slate-400" />
-                                <span className="text-xs font-bold text-slate-300">{task.label}</span>
-                              </div>
-                              <div className="flex items-center gap-2 text-[10px] font-bold">
-                                <span className="text-slate-500">{count} วัน</span>
-                                <span className="text-white bg-white/10 px-2 py-0.5 rounded-full">{percent}%</span>
-                              </div>
-                            </div>
-                            <div className="w-full h-1 bg-black/40 rounded-full overflow-hidden">
-                              <motion.div 
-                                initial={{ width: 0 }}
-                                animate={{ width: `${percent}%` }}
-                                transition={{ duration: 1, ease: "easeOut" }}
-                                className={cn("h-full rounded-full bg-gradient-to-r", category.color)} 
+              <div className="flex-1 overflow-y-auto p-6 space-y-6 relative z-10 custom-scrollbar">
+                {/* Top Stats Row */}
+                <div className="grid grid-cols-2 gap-4">
+                  <motion.div 
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="bg-gradient-to-br from-white/10 to-transparent border border-white/10 rounded-[24px] p-5 relative overflow-hidden group"
+                  >
+                    <div className="absolute top-0 right-0 p-3 opacity-20 group-hover:opacity-40 transition-opacity">
+                      <BarChart3 size={24} className="text-cyan-400" />
+                    </div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">ความสม่ำเสมอ</p>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-3xl font-black text-white">{avgCompletion}</span>
+                      <span className="text-sm font-bold text-slate-500">%</span>
+                    </div>
+                  </motion.div>
+
+                  <motion.div 
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="bg-gradient-to-br from-white/10 to-transparent border border-white/10 rounded-[24px] p-5 relative overflow-hidden group"
+                  >
+                    <div className="absolute top-0 right-0 p-3 opacity-20 group-hover:opacity-40 transition-opacity">
+                      <Sparkles size={24} className="text-fuchsia-400" />
+                    </div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">สำเร็จ 100%</p>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-rose-400">{streak}</span>
+                      <span className="text-sm font-bold text-slate-500">วันติด</span>
+                    </div>
+                  </motion.div>
+                </div>
+
+                {/* Activity Grid */}
+                <div className="bg-white/5 border border-white/5 rounded-[28px] p-5">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-[11px] font-black text-slate-300 uppercase tracking-widest">ปฏิทินกิจกรรม</h3>
+                    <span className="text-[10px] text-slate-500 font-bold">{activeDays} / {daysPassedInMonth} วันที่ลงมือทำ</span>
+                  </div>
+                  <div className="grid grid-cols-7 gap-1.5">
+                    {activityData.map((day, idx) => (
+                      <motion.div 
+                        key={idx}
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: idx * 0.01 }}
+                        className={cn(
+                          "aspect-square rounded-md relative group cursor-help",
+                          day.percent === 100 ? "bg-gradient-to-br from-cyan-400 to-blue-500 shadow-[0_0_8px_rgba(34,211,238,0.4)]" :
+                          day.percent > 50 ? "bg-white/20" :
+                          day.percent > 0 ? "bg-white/10" :
+                          "bg-black/40 border border-white/5"
+                        )}
+                      >
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-white text-[#0F172A] text-[10px] font-black rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20">
+                          วันที่ {idx + 1}: {day.percent}%
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                  <div className="mt-4 flex items-center justify-between">
+                    <div className="flex gap-1 items-center">
+                      <div className="w-2 h-2 rounded-full bg-black/40 border border-white/5" />
+                      <div className="w-2 h-2 rounded-full bg-white/10" />
+                      <div className="w-2 h-2 rounded-full bg-white/20" />
+                      <div className="w-2 h-2 rounded-full bg-cyan-400" />
+                    </div>
+                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">ระดับความสม่ำเสมอ</span>
+                  </div>
+                </div>
+
+                {/* Categories Stat - 3 Columns with Circular Progress */}
+                <div className="space-y-4">
+                  <h3 className="text-[11px] font-black text-slate-300 uppercase tracking-widest px-1">สถิติรายหมวดหมู่</h3>
+                  <div className="grid grid-cols-3 gap-3">
+                    {DAILY_TASKS.map((category, idx) => {
+                      const stats = categoryStats[category.category];
+                      const percent = Math.round((stats.completed / stats.total) * 100) || 0;
+                      
+                      return (
+                        <motion.div 
+                          key={category.category}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3 + (idx * 0.1) }}
+                          className="bg-white/5 border border-white/5 rounded-[24px] p-3 flex flex-col items-center group hover:bg-white/[0.08] transition-all"
+                        >
+                          {/* Circular Progress */}
+                          <div className="relative w-14 h-14 mb-3">
+                            <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                              {/* Background Circle */}
+                              <circle 
+                                className="text-white/5" 
+                                strokeWidth="10" 
+                                stroke="currentColor" 
+                                fill="transparent" 
+                                r="40" 
+                                cx="50" 
+                                cy="50" 
                               />
+                              {/* Progress Circle */}
+                              <motion.circle
+                                initial={{ strokeDashoffset: 251.2 }}
+                                animate={{ strokeDashoffset: 251.2 - (251.2 * percent) / 100 }}
+                                transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 + (idx * 0.1) }}
+                                className={cn(
+                                  "drop-shadow-[0_0_5px_rgba(255,255,255,0.2)]",
+                                  category.color.includes("blue") ? "text-cyan-400" : 
+                                  category.color.includes("fuchsia") ? "text-fuchsia-400" : 
+                                  "text-purple-400"
+                                )}
+                                strokeWidth="10"
+                                strokeDasharray="251.2"
+                                strokeLinecap="round"
+                                stroke="currentColor"
+                                fill="transparent"
+                                r="40" cx="50" cy="50"
+                              />
+                            </svg>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                              <span className="text-[10px] font-black text-white">{percent}%</span>
                             </div>
                           </div>
-                        );
-                      })}
-                    </div>
+
+                          <div className="text-center">
+                            <div className={cn("inline-block mb-1 opacity-80", category.color.includes("blue") ? "text-cyan-400" : category.color.includes("fuchsia") ? "text-fuchsia-400" : "text-purple-400")}>
+                              {idx === 0 ? <UserPlus size={14} /> : idx === 1 ? <ImageIcon size={14} /> : <Briefcase size={14} />}
+                            </div>
+                            <h4 className="text-[9px] font-black text-slate-300 uppercase tracking-tighter leading-tight">
+                              {category.category.replace("My ", "")}
+                            </h4>
+                          </div>
+
+                          {/* Mini Task Counts */}
+                          <div className="mt-3 flex flex-col gap-1 w-full">
+                            <p className="text-[7px] font-black text-slate-500 uppercase tracking-widest mb-1 text-center">Top 3</p>
+                            {[...category.tasks]
+                              .sort((a, b) => (taskCounts[b.id] || 0) - (taskCounts[a.id] || 0))
+                              .slice(0, 3)
+                              .map(task => {
+                                const count = taskCounts[task.id] || 0;
+                                return (
+                                  <div key={task.id} className="flex justify-between items-center bg-black/40 px-1.5 py-1 rounded-lg border border-white/5 w-full">
+                                    <span className="text-[7px] font-medium text-slate-400 truncate mr-1">{task.label}</span>
+                                    <span className="text-[8px] font-black text-cyan-400 shrink-0">{count}</span>
+                                  </div>
+                                );
+                              })}
+                          </div>
+                        </motion.div>
+                      );
+                    })}
                   </div>
-                ))}
+                </div>
+
+                <div className="pb-6">
+                  <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-[24px] p-6 text-center shadow-lg relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none" />
+                    <Sparkles className="mx-auto mb-3 text-white animate-pulse" size={32} />
+                    <h4 className="text-[14px] font-black text-white mb-2 leading-tight whitespace-pre-line">
+                      {summaryQuote.h4}
+                    </h4>
+                    <p className="text-indigo-100 text-[10px] font-bold opacity-90 italic">{summaryQuote.p}</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Modal Footer */}
+              <div className="p-6 pt-2 bg-[#0F172A]/90 backdrop-blur-md border-t border-white/5 relative z-10">
+                <button 
+                  onClick={() => setShowSummary(false)}
+                  className="w-full py-4 rounded-2xl bg-white text-[#0F172A] font-black text-sm uppercase tracking-widest hover:bg-slate-100 transition-all active:scale-95 shadow-xl shadow-white/5"
+                >
+                  ปิดหน้านี้
+                </button>
               </div>
             </motion.div>
           </motion.div>

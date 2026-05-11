@@ -3,14 +3,14 @@
 import { useEffect, useState } from "react";
 import { format, startOfMonth, endOfMonth, subMonths, addMonths } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Users, MapPin, ChevronLeft, ChevronRight, Briefcase, Edit2, Check, X } from "lucide-react";
+import { Plus, Users, MapPin, ChevronLeft, ChevronRight, Briefcase, Edit2, Check, X, Star } from "lucide-react";
 import Image from "next/image";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/lib/utils";
 import { SwipeDeleteWrapper } from "@/components/swipe-delete-wrapper";
 
 export default function NewComersPage() {
-  const { newComers, addNewComer, updateNewComer } = useAppStore();
+  const { newComers, addNewComer, updateNewComer, toggleNewComerFavorite } = useAppStore();
   const [isClient, setIsClient] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -55,8 +55,11 @@ export default function NewComersPage() {
     });
   }
 
-  // Sort by Total Score (Descending)
+  // Sort by Favorite then Total Score (Descending)
   currentMonthComers.sort((a, b) => {
+    if (a.isFavorite && !b.isFavorite) return -1;
+    if (!a.isFavorite && b.isFavorite) return 1;
+
     const getScore = (c: any) => 
       Number(c.scores?.money ?? 0) + 
       Number(c.scores?.active ?? 0) + 
@@ -303,22 +306,22 @@ export default function NewComersPage() {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-[10px] text-slate-400 font-bold block uppercase mb-1">Name</label>
-                      <input type="text" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-pink-400/50 focus:outline-none shadow-inner" />
+                      <input type="text" value={editForm.name || ""} onChange={e => setEditForm({...editForm, name: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-pink-400/50 focus:outline-none shadow-inner" />
                     </div>
                     <div>
                       <label className="text-[10px] text-slate-400 font-bold block uppercase mb-1">Platform</label>
-                      <input type="text" value={editForm.platform} onChange={e => setEditForm({...editForm, platform: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-pink-400/50 focus:outline-none shadow-inner" />
+                      <input type="text" value={editForm.platform || ""} onChange={e => setEditForm({...editForm, platform: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-pink-400/50 focus:outline-none shadow-inner" />
                     </div>
                   </div>
 
                   <div>
                     <label className="text-[10px] text-slate-400 font-bold block uppercase mb-1">Job</label>
-                    <input type="text" value={editForm.job} onChange={e => setEditForm({...editForm, job: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-pink-400/50 focus:outline-none shadow-inner" />
+                    <input type="text" value={editForm.job || ""} onChange={e => setEditForm({...editForm, job: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:border-pink-400/50 focus:outline-none shadow-inner" />
                   </div>
 
                   <div>
                     <label className="text-[10px] text-slate-400 font-bold block uppercase mb-1">Notes</label>
-                    <textarea value={editForm.notes} onChange={e => setEditForm({...editForm, notes: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white text-sm h-16 resize-none focus:border-pink-400/50 focus:outline-none shadow-inner" />
+                    <textarea value={editForm.notes || ""} onChange={e => setEditForm({...editForm, notes: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white text-sm h-16 resize-none focus:border-pink-400/50 focus:outline-none shadow-inner" />
                   </div>
 
                   <div className="pt-3 border-t border-white/10">
@@ -369,7 +372,7 @@ export default function NewComersPage() {
                 <div
                   className="bg-[#0F172A] p-4 rounded-3xl border border-white/10 shadow-[0_8px_32_rgba(0,0,0,0.3)] relative overflow-hidden group z-10"
                 >
-                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                  <div className="absolute top-4 right-4 z-20 flex gap-1">
                     <button onClick={() => startEditing(comer)} className="p-2 bg-black/40 hover:bg-black/60 rounded-xl text-slate-300 border border-white/10 transition-colors">
                       <Edit2 size={14} />
                     </button>
@@ -383,6 +386,23 @@ export default function NewComersPage() {
                       <div>
                         <div className="flex items-center gap-2">
                           <h3 className="font-extrabold text-white text-lg leading-tight drop-shadow-md">{comer.name}</h3>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleNewComerFavorite(comer.id);
+                            }}
+                            className="transition-all active:scale-90"
+                          >
+                            <Star 
+                              size={18} 
+                              className={cn(
+                                "transition-colors",
+                                comer.isFavorite 
+                                  ? "fill-yellow-400 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]" 
+                                  : "text-slate-600 hover:text-slate-400"
+                              )} 
+                            />
+                          </button>
                           <div className="px-2 py-0.5 rounded-md bg-pink-500/20 border border-pink-500/30 text-[9px] font-black text-pink-400 uppercase tracking-[0.05em]">
                             TOTAL : {
                               Number(comer.scores?.money ?? 0) + 

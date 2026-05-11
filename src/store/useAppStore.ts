@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { format } from 'date-fns';
 import { db } from '../lib/firebase';
 import { doc, setDoc, collection, addDoc, getDocs } from 'firebase/firestore';
@@ -61,6 +61,8 @@ interface AppState {
   updateNewComer: (id: string, updates: Partial<NewComer>) => void;
   deleteNewComer: (id: string) => void;
   deleteCase: (id: string) => void;
+  celebratedDays: Record<string, boolean>;
+  setCelebratedDay: (dateStr: string, isCelebrated: boolean) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -71,6 +73,19 @@ export const useAppStore = create<AppState>()(
       totalPV: 0,
       dailyStatus: {},
       readBooks: [],
+      celebratedDays: {},
+      setCelebratedDay: (dateStr, isCelebrated) => set((state) => {
+        const current = !!state.celebratedDays[dateStr];
+        if (current === isCelebrated) return state;
+
+        const nextCelebrated = { ...state.celebratedDays };
+        if (isCelebrated) {
+          nextCelebrated[dateStr] = true;
+        } else {
+          delete nextCelebrated[dateStr];
+        }
+        return { celebratedDays: nextCelebrated };
+      }),
       addNewComer: (comer) => set((state) => {
         const newRecord = { ...comer, id: Date.now().toString(), createdAt: Date.now() };
         if (db) {
@@ -312,6 +327,39 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'em-guide-storage',
+      version: 1,
+      migrate: (persistedState: any, version: number) => {
+        if (version === 0) {
+          if (!persistedState.celebratedDays) {
+            persistedState.celebratedDays = {};
+          }
+        }
+        return persistedState as AppState;
+      },
+      storage: createJSONStorage(() => ({
+        getItem: (name) => {
+          try {
+            return localStorage.getItem(name);
+          } catch (error) {
+            console.error('Failed to get item from storage:', error);
+            return null;
+          }
+        },
+        setItem: (name, value) => {
+          try {
+            localStorage.setItem(name, value);
+          } catch (error) {
+            console.error('Failed to set item to storage:', error);
+          }
+        },
+        removeItem: (name) => {
+          try {
+            localStorage.removeItem(name);
+          } catch (error) {
+            console.error('Failed to remove item from storage:', error);
+          }
+        },
+      })),
     }
   )
 );

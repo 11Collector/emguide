@@ -61,7 +61,7 @@ const DAILY_TASKS = [
 ];
 
 export default function DailyChecklist() {
-  const { dailyStatus, getTasksForDate, toggleDailyTask, incrementDailyTask, getTaskCount } = useAppStore();
+  const { dailyStatus, getTasksForDate, toggleDailyTask, incrementDailyTask, getTaskCount, celebratedDays, setCelebratedDay } = useAppStore();
   const [isClient, setIsClient] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -79,17 +79,19 @@ export default function DailyChecklist() {
 
   useEffect(() => {
     if (isClient) {
-      const celebratedKey = `celebrated_${todayStr}`;
+      const celebratedKey = `daily_${todayStr}`;
       if (progress === 100) {
-        if (!localStorage.getItem(celebratedKey)) {
+        if (!celebratedDays[celebratedKey]) {
           setShowCelebration(true);
-          localStorage.setItem(celebratedKey, "true");
+          setCelebratedDay(celebratedKey, true);
         }
       } else {
-        localStorage.removeItem(celebratedKey);
+        if (celebratedDays[celebratedKey]) {
+          setCelebratedDay(celebratedKey, false);
+        }
       }
     }
-  }, [progress, todayStr, isClient]);
+  }, [progress, todayStr, isClient, celebratedDays, setCelebratedDay]);
 
   if (!isClient) return null;
 

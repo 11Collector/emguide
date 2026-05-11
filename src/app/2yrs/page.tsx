@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { SwipeDeleteWrapper } from "@/components/swipe-delete-wrapper";
 
 export default function TwoYearsPage() {
-  const { cases, totalPV, addCase, setPV } = useAppStore();
+  const { cases, totalPV, addCase, setPV, celebratedDays, setCelebratedDay } = useAppStore();
   const [isClient, setIsClient] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newCase, setNewCase] = useState({ name: "", type: "BM", notes: "" });
@@ -34,15 +34,17 @@ export default function TwoYearsPage() {
       const celebratedKey = `case_celebration_${monthStr}`;
       
       if (currentMonthCases.length >= 15 && totalPV >= 30000) {
-        if (!localStorage.getItem(celebratedKey)) {
+        if (!celebratedDays[celebratedKey]) {
           setShowCelebration(true);
-          localStorage.setItem(celebratedKey, "true");
+          setCelebratedDay(celebratedKey, true);
         }
       } else {
-        localStorage.removeItem(celebratedKey);
+        if (celebratedDays[celebratedKey]) {
+          setCelebratedDay(celebratedKey, false);
+        }
       }
     }
-  }, [currentMonthCases.length, totalPV, currentDate, isClient]);
+  }, [currentMonthCases.length, totalPV, currentDate, isClient, celebratedDays, setCelebratedDay]);
 
   if (!isClient) return null;
   

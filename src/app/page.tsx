@@ -155,9 +155,14 @@ export default function HomePage() {
         transition={{ delay: 0.8 }}
         className="mb-8"
       >
-        <h3 className="text-sm font-bold text-slate-300 mb-4 uppercase tracking-wider px-2 flex items-center gap-2">
-          <Play size={14} className="fill-red-500 text-red-500" /> Boarding Pack
-        </h3>
+        <div className="flex justify-between items-center mb-4 px-2">
+          <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+            <Play size={14} className="fill-red-500 text-red-500" /> Boarding Pack
+          </h3>
+          <Link href="/emphasis-pack" className="text-[10px] text-red-400 font-bold uppercase tracking-wider flex items-center gap-1 hover:text-red-300 bg-red-500/10 px-3 py-1.5 rounded-full border border-red-500/20 active:scale-95 transition-all">
+            ดูทั้งหมด <ChevronRight size={12} />
+          </Link>
+        </div>
         <div className="grid grid-cols-2 gap-3">
           {[
             {

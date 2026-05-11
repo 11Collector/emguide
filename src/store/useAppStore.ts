@@ -42,14 +42,15 @@ interface AppState {
   cases: CaseRecord[];
   newComers: NewComer[];
   totalPV: number;
+  monthlyPV: Record<string, number>;
   dailyStatus: DailyActivity;
   readBooks: number[];
-  addCase: (newCase: Omit<CaseRecord, "id" | "createdAt">) => void;
+  addCase: (newCase: Omit<CaseRecord, "id"> & { createdAt?: number }) => void;
   updateCaseStage: (id: string, stage: number) => void;
   updateCaseStep: (id: string, step: string) => void;
   updateCaseNotes: (id: string, notes: string) => void;
   toggleCaseSlide: (caseId: string, slideId: string) => void;
-  setPV: (amount: number) => void;
+  setPV: (amount: number, monthStr?: string) => void;
   toggleDailyTask: (dateStr: string, taskId: string) => void;
   incrementDailyTask: (dateStr: string, taskId: string, delta: number) => void;
   getTaskCount: (dateStr: string, taskId: string) => number;
@@ -71,6 +72,7 @@ export const useAppStore = create<AppState>()(
       cases: [],
       newComers: [],
       totalPV: 0,
+      monthlyPV: {},
       dailyStatus: {},
       readBooks: [],
       celebratedDays: {},
@@ -115,7 +117,8 @@ export const useAppStore = create<AppState>()(
       }),
       addCase: (newCase) => set((state) => {
         const initialSteps = newCase.type === "BM" ? ["BM"] : newCase.type === "EM6W" ? ["6W"] : [];
-        const caseRecord = { ...newCase, id: Date.now().toString(), createdAt: Date.now(), completedSteps: initialSteps };
+        const finalCreatedAt = newCase.createdAt || Date.now();
+        const caseRecord = { ...newCase, id: Date.now().toString(), createdAt: finalCreatedAt, completedSteps: initialSteps };
         if (db) {
            setDoc(doc(db, "cases", caseRecord.id), caseRecord).catch(e => console.error("Firebase sync error", e));
         }
@@ -179,12 +182,15 @@ export const useAppStore = create<AppState>()(
         }
         return { cases: updatedCases };
       }),
-      setPV: (amount) => set(() => {
+      setPV: (amount, monthStr) => set((state) => {
+        const actualMonth = monthStr || format(new Date(), "yyyy-MM");
+        const newMonthlyPV = { ...(state.monthlyPV || {}), [actualMonth]: amount };
         if (db) {
-           setDoc(doc(db, "userStats", "pv"), { totalPV: amount }).catch(e => console.error(e));
+           setDoc(doc(db, "userStats", "pv"), { totalPV: amount, monthlyPV: newMonthlyPV }, { merge: true }).catch(e => console.error(e));
         }
         return {
-          totalPV: amount
+          totalPV: amount,
+          monthlyPV: newMonthlyPV
         };
       }),
       toggleDailyTask: (dateStr, taskId) => set((state) => {
@@ -302,10 +308,14 @@ export const useAppStore = create<AppState>()(
           // Fetch PV
           const pvSnap = await getDocs(collection(db, "userStats"));
           let fetchedPV = get().totalPV;
+          let fetchedMonthlyPV = get().monthlyPV || {};
           let fetchedBooks = get().readBooks || [];
           pvSnap.forEach(doc => {
             if (doc.id === "pv") {
               fetchedPV = doc.data().totalPV || 0;
+              if (doc.data().monthlyPV) {
+                fetchedMonthlyPV = doc.data().monthlyPV;
+              }
             }
             if (doc.id === "books") {
               fetchedBooks = doc.data().readBooks || [];
@@ -319,7 +329,7 @@ export const useAppStore = create<AppState>()(
             fetchedDaily[doc.id] = { tasks: doc.data().tasks || [] };
           });
 
-          set({ cases: fetchedCases, totalPV: fetchedPV, dailyStatus: fetchedDaily, readBooks: fetchedBooks });
+          set({ cases: fetchedCases, totalPV: fetchedPV, monthlyPV: fetchedMonthlyPV, dailyStatus: fetchedDaily, readBooks: fetchedBooks });
         } catch (error) {
           console.error("Failed to fetch initial data from Firebase", error);
         }
@@ -333,6 +343,9 @@ export const useAppStore = create<AppState>()(
           if (!persistedState.celebratedDays) {
             persistedState.celebratedDays = {};
           }
+        }
+        if (!persistedState.monthlyPV) {
+          persistedState.monthlyPV = {};
         }
         return persistedState as AppState;
       },

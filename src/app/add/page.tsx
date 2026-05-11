@@ -15,15 +15,19 @@ export default function AddCase() {
   const [name, setName] = useState("");
   const [type, setType] = useState<"BM" | "EM6W">("BM");
   const [notes, setNotes] = useState("");
+  const [selectedDate, setSelectedDate] = useState(format(new Date(), "yyyy-MM-dd"));
   
   const handleSave = () => {
     if (!name) return;
+    
+    const dateObj = new Date(selectedDate);
     
     addCase({
       name,
       type,
       notes,
-      date: format(new Date(), "PP")
+      date: format(dateObj, "PP"),
+      createdAt: dateObj.getTime()
     });
 
     // Provide a neat little delay for the button animation to complete
@@ -72,6 +76,21 @@ export default function AddCase() {
               className="w-full bg-white border border-slate-200 shadow-sm rounded-2xl p-4 pl-12 text-slate-800 font-medium placeholder:text-slate-300 focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all"
             />
           </div>
+        </motion.div>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.18 }}
+          className="space-y-2"
+        >
+          <label className="text-xs font-bold text-slate-500 ml-1 uppercase tracking-wider">Date</label>
+          <input 
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="w-full bg-white border border-slate-200 shadow-sm rounded-2xl p-4 text-slate-800 font-medium placeholder:text-slate-300 focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all"
+          />
         </motion.div>
 
         <motion.div 

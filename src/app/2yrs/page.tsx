@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { SwipeDeleteWrapper } from "@/components/swipe-delete-wrapper";
 
 export default function TwoYearsPage() {
-  const { cases, totalPV, addCase, setPV, celebratedDays, setCelebratedDay } = useAppStore();
+  const { cases, monthlyPV, addCase, setPV, celebratedDays, setCelebratedDay } = useAppStore();
   const [isClient, setIsClient] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newCase, setNewCase] = useState({ name: "", type: "BM", notes: "" });
@@ -23,6 +23,9 @@ export default function TwoYearsPage() {
   const monthStart = startOfMonth(currentDate).getTime();
   const monthEnd = endOfMonth(currentDate).getTime();
   const currentMonthCases = cases.filter(c => c.createdAt >= monthStart && c.createdAt <= monthEnd);
+  
+  const monthStr = format(currentDate, "yyyy-MM");
+  const currentMonthPV = monthlyPV?.[monthStr] || 0;
 
   useEffect(() => {
     setIsClient(true);
@@ -33,7 +36,7 @@ export default function TwoYearsPage() {
       const monthStr = format(currentDate, "yyyy-MM");
       const celebratedKey = `case_celebration_${monthStr}`;
       
-      if (currentMonthCases.length >= 15 && totalPV >= 30000) {
+      if (currentMonthCases.length >= 15 && currentMonthPV >= 30000) {
         if (!celebratedDays[celebratedKey]) {
           setShowCelebration(true);
           setCelebratedDay(celebratedKey, true);
@@ -44,7 +47,7 @@ export default function TwoYearsPage() {
         }
       }
     }
-  }, [currentMonthCases.length, totalPV, currentDate, isClient, celebratedDays, setCelebratedDay]);
+  }, [currentMonthCases.length, currentMonthPV, currentDate, isClient, celebratedDays, setCelebratedDay, monthStr]);
 
   if (!isClient) return null;
   
@@ -54,9 +57,10 @@ export default function TwoYearsPage() {
     addCase({
       name: newCase.name,
       type: newCase.type as "BM" | "EM6W",
-      date: format(new Date(), "yyyy-MM-dd"), // keep actual date
+      date: format(currentDate, "yyyy-MM-dd"), // keep actual date
       notes: newCase.notes,
-      stage: 1 // default stage for Follow Up Sponsor
+      stage: 1, // default stage for Follow Up Sponsor
+      createdAt: currentDate.getTime()
     });
     setNewCase({ name: "", type: "BM", notes: "" });
     setShowAddForm(false);
@@ -66,7 +70,7 @@ export default function TwoYearsPage() {
     e.preventDefault();
     const val = parseInt(pvInput);
     if (!isNaN(val)) {
-      setPV(val);
+      setPV(val, monthStr);
       setPvInput("");
     }
   };
@@ -150,7 +154,7 @@ export default function TwoYearsPage() {
             <span className="text-[10px] font-bold text-indigo-200 uppercase tracking-widest">PPV</span>
           </div>
           <h2 className="text-2xl font-extrabold text-white truncate drop-shadow-md">
-            {totalPV.toLocaleString()}
+            {currentMonthPV.toLocaleString()}
           </h2>
           <form onSubmit={handleUpdatePV} className="mt-2 flex gap-2 relative z-10">
             <input

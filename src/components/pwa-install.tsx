@@ -86,9 +86,9 @@ export function PWAInstall() {
                   <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-400 p-4 shadow-lg mb-4">
                     <Image src="/logo.png" alt="Logo" width={80} height={80} className="w-full h-full object-contain" />
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-2">Install EM GUIDE</h3>
+                  <h3 className="text-xl font-bold text-white mb-2">Install EM DAILY</h3>
                   <p className="text-sm text-slate-400">
-                    Add EM GUIDE to your home screen for the best experience.
+                    Add EM DAILY to your home screen for the best experience.
                   </p>
                 </div>
 

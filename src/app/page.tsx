@@ -88,7 +88,7 @@ export default function HomePage() {
       {/* Date Header */}
       <div className="flex justify-between items-center mb-6">
         <div className="text-slate-400 text-xs font-bold uppercase tracking-widest">
-          WELCOME TO EMGUIDE
+          WELCOME TO EM DAILY
         </div>
         <div className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.2em]">
           {format(new Date(), "dd MMM yyyy")}

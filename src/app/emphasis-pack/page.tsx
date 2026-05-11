@@ -62,7 +62,7 @@ export default function EmphasisPackPage() {
       </motion.div>
 
       {/* Grid of Packs */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
         {PACKS.map((pack, idx) => (
           <motion.a
             key={pack.id}
@@ -72,18 +72,18 @@ export default function EmphasisPackPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 + (idx * 0.05) }}
-            className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col items-center justify-center gap-3 hover:bg-white/10 active:scale-[0.98] transition-all group overflow-hidden relative"
+            className="bg-white/5 border border-white/10 rounded-2xl p-3 flex flex-col items-center justify-center gap-2 hover:bg-white/10 active:scale-[0.98] transition-all group overflow-hidden relative"
           >
             {/* Subtle gradient background on hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-red-500/0 to-orange-500/0 group-hover:from-red-500/10 group-hover:to-orange-500/10 transition-colors" />
             
-            <div className="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center text-red-500 group-hover:bg-red-500 group-hover:text-white transition-all relative z-10">
-              <Play size={20} className="ml-1" fill="currentColor" />
+            <div className="w-10 h-10 bg-red-500/10 rounded-full flex items-center justify-center text-red-500 group-hover:bg-red-500 group-hover:text-white transition-all relative z-10">
+              <Play size={16} className="ml-1" fill="currentColor" />
             </div>
             
             <div className="text-center relative z-10">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Pack</span>
-              <span className="text-2xl font-black text-white">{pack.id}</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Pack</span>
+              <span className="text-xl font-black text-white">{pack.id}</span>
             </div>
           </motion.a>
         ))}

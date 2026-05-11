@@ -2,8 +2,8 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'EM GUIDE',
-    short_name: 'EM GUIDE',
+    name: 'EM DAILY',
+    short_name: 'EM DAILY',
     description: 'Daily & Weekly Tracker for EMPHASIS',
     start_url: '/',
     display: 'standalone',

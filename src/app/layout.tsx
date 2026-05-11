@@ -11,12 +11,12 @@ const kanitFont = Kanit({
 });
 
 export const metadata: Metadata = {
-  title: "EM GUIDE",
+  title: "EM DAILY",
   description: "Daily & Weekly Tracker for EMPHASIS",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "EM GUIDE",
+    title: "EM DAILY",
   },
   icons: {
     icon: "/icon-192x192.png",

@@ -32,6 +32,8 @@ export const viewport: Viewport = {
   themeColor: "#030712",
 };
 
+import { BackgroundMusic } from "@/components/audio/BackgroundMusic";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -47,6 +49,7 @@ export default function RootLayout({
           {children}
         </main>
         <BottomNav />
+        <BackgroundMusic />
       </body>
     </html>
   );

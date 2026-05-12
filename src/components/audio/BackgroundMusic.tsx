@@ -47,17 +47,40 @@ export function BackgroundMusic() {
     setCurrentIndex((prev) => (prev + 1) % PLAYLIST.length);
   };
 
+  // Handle track changes
   useEffect(() => {
-    if (audioRef.current) {
-      const newUrl = PLAYLIST[currentIndex].url;
-      if (!audioRef.current.src.endsWith(newUrl)) {
-        audioRef.current.src = newUrl;
-        if (isPlaying) {
-          audioRef.current.play().catch(() => {});
-        }
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const newUrl = PLAYLIST[currentIndex].url;
+    // Only update if the source is actually different
+    if (!audio.src.endsWith(newUrl)) {
+      const wasPlaying = isPlaying;
+      audio.pause();
+      audio.src = newUrl;
+      audio.load();
+      
+      if (wasPlaying) {
+        audio.play().catch((e) => {
+          if (e.name !== "AbortError") console.error("Playback error:", e);
+        });
       }
     }
-  }, [currentIndex, isPlaying]);
+  }, [currentIndex]);
+
+  // Handle play/pause state
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (isPlaying) {
+      audio.play().catch((e) => {
+        if (e.name !== "AbortError") console.error("Playback error:", e);
+      });
+    } else {
+      audio.pause();
+    }
+  }, [isPlaying]);
 
   const handleEnded = () => {
     nextTrack();

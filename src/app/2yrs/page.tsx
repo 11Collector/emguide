@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { format, startOfMonth, endOfMonth, subMonths, addMonths } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Briefcase, TrendingUp, User, Target, ChevronLeft, ChevronRight, Sparkles, Star } from "lucide-react";
+import { Plus, Briefcase, TrendingUp, User, Target, ChevronLeft, ChevronRight, Sparkles, Star, Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,7 @@ export default function TwoYearsPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showValues, setShowValues] = useState(true);
 
   // Month filtering
   const monthStart = startOfMonth(currentDate).getTime();
@@ -95,22 +96,30 @@ export default function TwoYearsPage() {
         <div className="w-14 h-14 bg-[#0F172A] rounded-2xl flex items-center justify-center shrink-0 border border-white/10 shadow-[0_0_30px_rgba(255,255,255,0.1)] overflow-hidden relative backdrop-blur-md">
           <Image src="/logo.png" alt="Logo" fill className="object-contain p-2 drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" />
         </div>
-        <div>
-          <motion.h1 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-cyan-200 tracking-tight leading-tight"
+        <div className="flex-1 flex justify-between items-start">
+          <div>
+            <motion.h1 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-cyan-200 tracking-tight leading-tight"
+            >
+              Case
+            </motion.h1>
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1 }}
+              className="text-slate-400 text-xs sm:text-sm font-medium mt-1 uppercase tracking-widest"
+            >
+              บันทึกเคสรายเดือน
+            </motion.p>
+          </div>
+          <button 
+            onClick={() => setShowValues(!showValues)}
+            className="w-10 h-10 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl flex items-center justify-center text-slate-400 hover:text-white transition-all active:scale-95 shadow-lg"
           >
-            Case
-          </motion.h1>
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.1 }}
-            className="text-slate-400 text-xs sm:text-sm font-medium mt-1 uppercase tracking-widest"
-          >
-            บันทึกเคสรายเดือน
-          </motion.p>
+            {showValues ? <Eye size={18} /> : <EyeOff size={18} />}
+          </button>
         </div>
       </header>
 
@@ -141,7 +150,7 @@ export default function TwoYearsPage() {
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Cases</span>
           </div>
           <h2 className="text-3xl font-extrabold text-white">
-            {currentMonthCases.length} <span className="text-sm font-medium text-slate-500">/ 15</span>
+            {showValues ? currentMonthCases.length : "••"} <span className="text-sm font-medium text-slate-500">/ 15</span>
           </h2>
           <div className="w-full h-1.5 bg-black/40 rounded-full mt-3 overflow-hidden shadow-inner">
             <div 
@@ -163,7 +172,7 @@ export default function TwoYearsPage() {
             <span className="text-[10px] font-bold text-indigo-200 uppercase tracking-widest">PPV</span>
           </div>
           <h2 className="text-2xl font-extrabold text-white truncate drop-shadow-md">
-            {currentMonthPV.toLocaleString()}
+            {showValues ? currentMonthPV.toLocaleString() : "••••••"}
           </h2>
           <form onSubmit={handleUpdatePV} className="mt-2 flex gap-2 relative z-10">
             <input

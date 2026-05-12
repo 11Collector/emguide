@@ -77,7 +77,7 @@ export function BackgroundMusic() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed top-24 right-10 z-[40] flex flex-col items-end gap-1.5 pointer-events-none"
+            className="fixed top-20 right-3 z-[40] flex flex-col items-end gap-1.5 pointer-events-none"
           >
             {/* Balanced Holo Controls */}
             <div className="flex items-center bg-white/5 backdrop-blur-2xl border border-white/10 rounded-full p-1 shadow-[0_0_20px_rgba(255,255,255,0.05)] pointer-events-auto">
@@ -134,7 +134,7 @@ export function BackgroundMusic() {
                       />
                     ))}
                   </div>
-                  <span className="text-[8px] font-bold text-white/50 truncate max-w-[120px] uppercase tracking-wider leading-none">
+                  <span className="text-[8px] font-bold text-white/50 truncate max-w-[90px] uppercase tracking-wider leading-none">
                     {PLAYLIST[currentIndex].title}
                   </span>
                 </motion.div>

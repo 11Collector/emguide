@@ -33,12 +33,22 @@ export default function FollowUpPage() {
   const monthEnd = endOfMonth(currentDate).getTime();
   const currentMonthCases = cases.filter(c => c.createdAt >= monthStart && c.createdAt <= monthEnd);
 
-  // Sort by completion percentage (descending)
+  // Sort by favorite, pack number, then completion percentage
   const totalSteps = BUSINESS_STEPS.length + PRODUCT_STEPS.length;
+  const getPackNumber = (pack?: string) => {
+    if (!pack) return -1;
+    if (pack === "Boarding") return 0;
+    return parseInt(pack) || -1;
+  };
+
   const sortedCases = [...currentMonthCases].sort((a, b) => {
     if (a.isFavorite && !b.isFavorite) return -1;
     if (!a.isFavorite && b.isFavorite) return 1;
-    
+
+    const aPackNum = getPackNumber(a.emphasisPack);
+    const bPackNum = getPackNumber(b.emphasisPack);
+    if (aPackNum !== bPackNum) return bPackNum - aPackNum;
+
     const aCompleted = a.completedSteps?.length || 0;
     const bCompleted = b.completedSteps?.length || 0;
     return bCompleted - aCompleted;

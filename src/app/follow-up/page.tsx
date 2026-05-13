@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { format, startOfMonth, endOfMonth, subMonths, addMonths } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, CheckCircle2, Circle, ChevronDown, ChevronUp, User, ChevronLeft, ChevronRight, Briefcase, ShoppingBag, Edit2, Check, X, Star } from "lucide-react";
+import { Plus, CheckCircle2, Circle, ChevronDown, ChevronUp, User, ChevronLeft, ChevronRight, Briefcase, ShoppingBag, Edit2, Check, X, Star, Headphones } from "lucide-react";
 import Image from "next/image";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/lib/utils";
@@ -11,9 +11,10 @@ import { cn } from "@/lib/utils";
 
 const BUSINESS_STEPS = ["BM", "BI", "2YRS", "UNIQUENESS", "CHECKIN", "5STEP"];
 const PRODUCT_STEPS = ["6W", "ARTISTRY", "ESPRING", "HOUSEHOLD", "SKY", "DETOX"];
+const EMPHASIS_PACKS = ["Boarding", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"];
 
 export default function FollowUpPage() {
-  const { cases, updateCaseStep, updateCaseNotes, toggleCaseFavorite } = useAppStore();
+  const { cases, updateCaseStep, updateCaseNotes, toggleCaseFavorite, updateEmphasisPack } = useAppStore();
   const [isClient, setIsClient] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -215,9 +216,17 @@ export default function FollowUpPage() {
                           </div>
                           <span className="text-emerald-400 font-extrabold text-sm drop-shadow-md">{progress}%</span>
                         </div>
-                        <p className="text-slate-400 text-xs truncate max-w-[90%] font-medium">
-                          {c.notes ? c.notes : "ยังไม่มีบันทึกเพิ่มเติม..."}
-                        </p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {c.emphasisPack && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-500/20 border border-purple-500/30 rounded-full text-purple-300 text-[10px] font-bold shrink-0">
+                              <Headphones size={9} />
+                              {c.emphasisPack === "Boarding" ? "Boarding" : `Pack ${c.emphasisPack}`}
+                            </span>
+                          )}
+                          <p className="text-slate-400 text-xs truncate font-medium">
+                            {c.notes ? c.notes : "ยังไม่มีบันทึกเพิ่มเติม..."}
+                          </p>
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 relative z-10 shrink-0">
@@ -244,6 +253,32 @@ export default function FollowUpPage() {
                         exit={{ height: 0, opacity: 0 }}
                         className="border-t border-white/10 bg-black/20"
                       >
+                        {/* Emphasis Pack Section */}
+                        <div className="p-5 border-b border-white/5">
+                          <h4 className="text-[10px] font-extrabold text-purple-400 uppercase tracking-widest flex items-center gap-1.5 mb-3">
+                            <Headphones size={12} /> Emphasis Pack
+                          </h4>
+                          <div className="flex flex-wrap gap-1.5">
+                            {EMPHASIS_PACKS.map((pack) => {
+                              const isActive = c.emphasisPack === pack;
+                              return (
+                                <button
+                                  key={pack}
+                                  onClick={(e) => { e.stopPropagation(); updateEmphasisPack(c.id, pack); }}
+                                  className={cn(
+                                    "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all duration-200",
+                                    isActive
+                                      ? "bg-purple-500 text-white shadow-[0_0_10px_rgba(168,85,247,0.5)]"
+                                      : "bg-white/5 text-slate-400 hover:bg-white/10 hover:text-slate-200"
+                                  )}
+                                >
+                                  {pack === "Boarding" ? "Boarding" : `P${pack}`}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
                         {/* Notes Section */}
                         <div className="p-5 border-b border-white/5">
                           <div className="flex justify-between items-center mb-3">

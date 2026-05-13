@@ -15,6 +15,7 @@ export interface CaseRecord {
   slides?: string[];
   completedSteps?: string[];
   isFavorite?: boolean;
+  emphasisPack?: string;
 }
 
 export interface NewComer {
@@ -66,6 +67,7 @@ interface AppState {
   toggleNewComerFavorite: (id: string) => void;
   deleteCase: (id: string) => void;
   toggleCaseFavorite: (id: string) => void;
+  updateEmphasisPack: (id: string, pack: string) => void;
   celebratedDays: Record<string, boolean>;
   setCelebratedDay: (dateStr: string, isCelebrated: boolean) => void;
 }
@@ -197,8 +199,18 @@ export const useAppStore = create<AppState>()(
         return { cases: updatedCases };
       }),
       toggleCaseFavorite: (id) => set((state) => {
-        const updatedCases = state.cases.map(c => 
+        const updatedCases = state.cases.map(c =>
           c.id === id ? { ...c, isFavorite: !c.isFavorite } : c
+        );
+        const targetCase = updatedCases.find(c => c.id === id);
+        if (db && targetCase) {
+          setDoc(doc(db, "cases", id), targetCase, { merge: true }).catch(e => console.error(e));
+        }
+        return { cases: updatedCases };
+      }),
+      updateEmphasisPack: (id, pack) => set((state) => {
+        const updatedCases = state.cases.map(c =>
+          c.id === id ? { ...c, emphasisPack: c.emphasisPack === pack ? undefined : pack } : c
         );
         const targetCase = updatedCases.find(c => c.id === id);
         if (db && targetCase) {

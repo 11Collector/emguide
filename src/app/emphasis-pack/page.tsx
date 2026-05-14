@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Play, LayoutGrid, Dices } from "lucide-react";
+import { motion } from "framer-motion";
+import { ChevronLeft, Play, LayoutGrid } from "lucide-react";
 import Link from "next/link";
 
 const PACKS = [
@@ -24,26 +23,6 @@ const PACKS = [
 ];
 
 export default function EmphasisPackPage() {
-  const [rolledPack, setRolledPack] = useState<number | null>(null);
-  const [isRolling, setIsRolling] = useState(false);
-
-  const rollDice = () => {
-    if (isRolling) return;
-    setIsRolling(true);
-    setRolledPack(null);
-
-    // Brief shuffle animation effect via rapid state changes
-    let count = 0;
-    const interval = setInterval(() => {
-      setRolledPack(Math.floor(Math.random() * 15) + 1);
-      count++;
-      if (count >= 8) {
-        clearInterval(interval);
-        setIsRolling(false);
-      }
-    }, 80);
-  };
-
   return (
     <div className="min-h-[100dvh] flex flex-col pb-20 pt-16 px-4 bg-[#0B1120]">
       {/* Header */}
@@ -71,106 +50,43 @@ export default function EmphasisPackPage() {
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="flex flex-col items-center justify-center mt-6 mb-6 relative"
+        className="flex flex-col items-center justify-center mt-6 mb-8 relative"
       >
         <div className="absolute inset-0 bg-red-500/10 blur-3xl rounded-full" />
         <div className="w-20 h-20 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center relative z-10 mb-4 shadow-[0_0_30px_rgba(239,68,68,0.15)]">
           <LayoutGrid size={32} className="text-red-400" />
         </div>
-        <p className="text-slate-400 text-sm text-center max-w-[280px] mb-5">
+        <p className="text-slate-400 text-sm text-center max-w-[280px]">
           เลือก Pack ที่ต้องการเรียนรู้จาก Playlist บน YouTube
         </p>
-
-        {/* Dice Button */}
-        <button
-          onClick={rollDice}
-          disabled={isRolling}
-          className="relative flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 font-semibold text-sm hover:bg-amber-500/20 active:scale-95 transition-all disabled:opacity-60"
-        >
-          <motion.div
-            animate={isRolling ? { rotate: [0, 15, -15, 15, -15, 0] } : {}}
-            transition={{ duration: 0.6, ease: "easeInOut" }}
-          >
-            <Dices size={18} />
-          </motion.div>
-          สุ่มแพค
-        </button>
-
-        {/* Result Banner */}
-        <AnimatePresence>
-          {rolledPack !== null && !isRolling && (
-            <motion.div
-              key={rolledPack}
-              initial={{ opacity: 0, y: 6, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="mt-4 flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/15 border border-amber-500/40"
-            >
-              <Dices size={15} className="text-amber-400" />
-              <span className="text-amber-300 text-sm font-medium">
-                ได้ <span className="font-black text-amber-200">Pack {rolledPack}</span> — ลองฟังดูนะ!
-              </span>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </motion.div>
 
       {/* Grid of Packs */}
       <div className="grid grid-cols-3 gap-2 sm:gap-4">
-        {PACKS.map((pack, idx) => {
-          const isSelected = rolledPack === pack.id;
-          return (
-            <motion.a
-              key={pack.id}
-              href={pack.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 + (idx * 0.05) }}
-              className={[
-                "border rounded-2xl p-3 flex flex-col items-center justify-center gap-2 active:scale-[0.98] transition-all group overflow-hidden relative",
-                isSelected
-                  ? "bg-amber-500/15 border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.2)]"
-                  : "bg-white/5 border-white/10 hover:bg-white/10"
-              ].join(" ")}
-            >
-              <div className={[
-                "absolute inset-0 bg-gradient-to-br transition-colors",
-                isSelected
-                  ? "from-amber-500/10 to-orange-500/10"
-                  : "from-red-500/0 to-orange-500/0 group-hover:from-red-500/10 group-hover:to-orange-500/10"
-              ].join(" ")} />
+        {PACKS.map((pack, idx) => (
+          <motion.a
+            key={pack.id}
+            href={pack.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 + (idx * 0.05) }}
+            className="bg-white/5 border border-white/10 rounded-2xl p-3 flex flex-col items-center justify-center gap-2 hover:bg-white/10 active:scale-[0.98] transition-all group overflow-hidden relative"
+          >
+            {/* Subtle gradient background on hover */}
+            <div className="absolute inset-0 bg-gradient-to-br from-red-500/0 to-orange-500/0 group-hover:from-red-500/10 group-hover:to-orange-500/10 transition-colors" />
 
-              <div className={[
-                "w-10 h-10 rounded-full flex items-center justify-center transition-all relative z-10",
-                isSelected
-                  ? "bg-amber-500 text-white"
-                  : "bg-red-500/10 text-red-500 group-hover:bg-red-500 group-hover:text-white"
-              ].join(" ")}>
-                <Play size={16} className="ml-1" fill="currentColor" />
-              </div>
+            <div className="w-10 h-10 bg-red-500/10 rounded-full flex items-center justify-center text-red-500 group-hover:bg-red-500 group-hover:text-white transition-all relative z-10">
+              <Play size={16} className="ml-1" fill="currentColor" />
+            </div>
 
-              <div className="text-center relative z-10">
-                <span className={[
-                  "text-[10px] font-bold uppercase tracking-widest block mb-0.5",
-                  isSelected ? "text-amber-400" : "text-slate-400"
-                ].join(" ")}>Pack</span>
-                <span className="text-xl font-black text-white">{pack.id}</span>
-              </div>
-
-              {isSelected && (
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-amber-500 flex items-center justify-center z-10"
-                >
-                  <Dices size={10} className="text-white" />
-                </motion.div>
-              )}
-            </motion.a>
-          );
-        })}
+            <div className="text-center relative z-10">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Pack</span>
+              <span className="text-xl font-black text-white">{pack.id}</span>
+            </div>
+          </motion.a>
+        ))}
       </div>
     </div>
   );

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { Download, CheckSquare, Briefcase, Users, UserPlus, Sparkles, ChevronRight, Play, RefreshCw } from "lucide-react";
+import { CheckSquare, Briefcase, Users, UserPlus, Sparkles, ChevronRight, Play, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { format, startOfDay, endOfDay } from "date-fns";
 import { PWAInstall } from "@/components/pwa-install";

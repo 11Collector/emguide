@@ -13,6 +13,50 @@ const BUSINESS_STEPS = ["BM", "BI", "2YRS", "UNIQUENESS", "CHECKIN", "5STEP"];
 const PRODUCT_STEPS = ["6W", "ARTISTRY", "ESPRING", "HOUSEHOLD", "SKY", "DETOX"];
 const EMPHASIS_PACKS = ["Boarding", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"];
 
+// Circular Progress Ring Component
+function CircularProgressRing({ progress }: { progress: number }) {
+  const radius = 32;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (progress / 100) * circumference;
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <svg width="80" height="80" className="transform -rotate-90">
+        {/* Background circle */}
+        <circle
+          cx="40"
+          cy="40"
+          r={radius}
+          fill="none"
+          stroke="rgba(255,255,255,0.1)"
+          strokeWidth="3"
+        />
+        {/* Progress circle */}
+        <circle
+          cx="40"
+          cy="40"
+          r={radius}
+          fill="none"
+          stroke="url(#progressGradient)"
+          strokeWidth="3"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          className="transition-all duration-500"
+          style={{ filter: 'drop-shadow(0 0 8px rgba(45,212,191,0.6))' }}
+        />
+        <defs>
+          <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#10b981" />
+            <stop offset="100%" stopColor="#06b6d4" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <span className="text-sm font-bold text-emerald-400">{progress}%</span>
+    </div>
+  );
+}
+
 export default function FollowUpPage() {
   const { cases, updateCaseStep, updateCaseNotes, toggleCaseFavorite, updateEmphasisPack } = useAppStore();
   const [isClient, setIsClient] = useState(false);
@@ -189,9 +233,9 @@ export default function FollowUpPage() {
                   )}
                 >
                   {/* Header */}
-                  <div 
+                  <div
                     onClick={() => toggleExpand(c.id)}
-                    className="w-full p-4 flex items-center justify-between text-left relative overflow-hidden cursor-pointer"
+                    className="w-full p-4 flex items-center justify-between text-left relative overflow-hidden cursor-pointer min-h-[100px]"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-teal-500/5" />
                     
@@ -239,18 +283,11 @@ export default function FollowUpPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 relative z-10 shrink-0">
+                    <div className="flex items-center gap-4 relative z-10 shrink-0">
+                      <CircularProgressRing progress={progress} />
                       <div className="text-slate-400">
                         {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                       </div>
-                    </div>
-                    
-                    {/* Progress bar background in header */}
-                    <div className="absolute bottom-0 left-0 h-1 bg-black/40 w-full">
-                      <div 
-                        className="h-full bg-gradient-to-r from-emerald-400 to-teal-400 shadow-[0_0_10px_rgba(45,212,191,0.8)]" 
-                        style={{ width: `${progress}%` }} 
-                      />
                     </div>
                   </div>
 
@@ -272,18 +309,20 @@ export default function FollowUpPage() {
                             {EMPHASIS_PACKS.map((pack) => {
                               const isActive = c.emphasisPack === pack;
                               return (
-                                <button
+                                <motion.button
                                   key={pack}
                                   onClick={(e) => { e.stopPropagation(); updateEmphasisPack(c.id, pack); }}
+                                  whileHover={{ scale: 1.12 }}
+                                  whileTap={{ scale: 0.95 }}
                                   className={cn(
-                                    "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all duration-200",
+                                    "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all duration-200 cursor-pointer",
                                     isActive
-                                      ? "bg-purple-500 text-white shadow-[0_0_10px_rgba(168,85,247,0.5)]"
-                                      : "bg-white/5 text-slate-400 hover:bg-white/10 hover:text-slate-200"
+                                      ? "bg-purple-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.7)] border border-purple-400/50"
+                                      : "bg-white/5 text-slate-400 hover:bg-white/15 hover:text-slate-100 hover:shadow-[0_0_12px_rgba(168,85,247,0.3)] border border-transparent hover:border-purple-500/30"
                                   )}
                                 >
                                   {pack === "Boarding" ? "Boarding" : `P${pack}`}
-                                </button>
+                                </motion.button>
                               );
                             })}
                           </div>

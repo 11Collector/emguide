@@ -42,7 +42,7 @@ const DAILY_TASKS = [
     glow: "bg-fuchsia-500/20",
     tasks: [
       { id: "social-post", label: "Post", icon: ImageIcon, isCounter: false },
-      { id: "social-add", label: "เพิ่มเพื่อน", icon: UserPlus, isCounter: false },
+      { id: "social-add", label: "เพิ่มเพื่อน", icon: UserPlus, isCounter: true },
       { id: "social-reply", label: "Comment / Reply Story", icon: MessageCircle, isCounter: false },
       { id: "social-hbd", label: "HBD ใน Inbox", icon: Gift, isCounter: false },
     ]

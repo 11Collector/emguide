@@ -220,7 +220,7 @@ export default function NewComersPage() {
 
       {/* Platform Filter - Horizontal Scrollable */}
       <div className="overflow-x-auto scrollbar-hide mb-4 relative z-10 -mx-6 px-6">
-        <div className="flex gap-2 w-max">
+        <div className="flex gap-2 w-max pr-6">
           <button
             onClick={() => setFilterPlatform("")}
             className={cn(

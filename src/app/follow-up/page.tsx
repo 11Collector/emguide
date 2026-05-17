@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { format, startOfMonth, endOfMonth, subMonths, addMonths } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, CheckCircle2, Circle, ChevronDown, ChevronUp, User, ChevronLeft, ChevronRight, Briefcase, ShoppingBag, Edit2, Check, X, Star, Headphones, BookOpen } from "lucide-react";
+import { Plus, CheckCircle2, Circle, ChevronDown, ChevronUp, User, ChevronLeft, ChevronRight, Briefcase, ShoppingBag, Edit2, Check, X, Star, Headphones, BookOpen, Search, XCircle } from "lucide-react";
 import Image from "next/image";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/lib/utils";
@@ -18,7 +18,9 @@ export default function FollowUpPage() {
   const [isClient, setIsClient] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
-  
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
+
   const [editingNotesId, setEditingNotesId] = useState<string | null>(null);
   const [tempNotes, setTempNotes] = useState("");
 
@@ -41,7 +43,12 @@ export default function FollowUpPage() {
     return parseInt(pack) || -1;
   };
 
-  const sortedCases = [...currentMonthCases].sort((a, b) => {
+  // If searching, search all cases. Otherwise, filter by month
+  const filteredCases = (searchQuery ? cases : currentMonthCases).filter(c =>
+    c.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const sortedCases = [...filteredCases].sort((a, b) => {
     if (a.isFavorite && !b.isFavorite) return -1;
     if (!a.isFavorite && b.isFavorite) return 1;
 
@@ -145,12 +152,50 @@ export default function FollowUpPage() {
             ติดตามผู้มุ่งหวัง
           </motion.p>
         </div>
-        <div className="ml-auto flex flex-col items-end">
+        <div className="ml-auto flex flex-col items-end gap-3">
           <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-[0.2em]">
             {format(new Date(), "dd MMM yyyy")}
           </div>
+          <button
+            onClick={() => setShowSearch(!showSearch)}
+            className="p-2 text-slate-400 hover:text-emerald-400 transition-colors"
+          >
+            <Search size={18} />
+          </button>
         </div>
       </header>
+
+      {/* Search Bar - Toggle */}
+      <AnimatePresence>
+        {showSearch && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-6 relative z-10 overflow-hidden"
+          >
+            <div className="relative flex items-center">
+              <Search size={16} className="absolute left-4 text-slate-400 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="ค้นหาชื่อคน..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                autoFocus
+                className="w-full bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] rounded-2xl pl-10 pr-10 py-3 text-white text-sm placeholder-slate-400 focus:outline-none focus:border-emerald-400/50 transition-colors"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-4 text-slate-400 hover:text-white transition-colors"
+                >
+                  <XCircle size={16} />
+                </button>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Month Selector */}
       <div className="flex items-center justify-between bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] rounded-2xl p-2 mb-6 relative z-10">
@@ -195,32 +240,32 @@ export default function FollowUpPage() {
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-teal-500/5" />
                     
-                    <div className="flex items-center gap-4 relative z-10 w-full pr-4">
+                    <div className="flex items-center gap-4 relative z-10 w-full">
                       <div className={cn(
                         "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-inner border",
                         c.type === "BM" ? "bg-blue-500/20 border-blue-500/30 text-blue-400" : "bg-emerald-500/20 border-emerald-500/30 text-emerald-400"
                       )}>
                         <User size={24} className="drop-shadow-lg" />
                       </div>
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0 pr-10">
                         <div className="flex justify-between items-center w-full mb-1">
                           <div className="flex items-center gap-2 mr-2">
                             <h3 className="font-extrabold text-white text-base truncate max-w-[150px]">{c.name}</h3>
-                            <button 
+                            <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 toggleCaseFavorite(c.id);
                               }}
                               className="transition-all active:scale-90 shrink-0"
                             >
-                              <Star 
-                                size={16} 
+                              <Star
+                                size={16}
                                 className={cn(
                                   "transition-colors",
-                                  c.isFavorite 
-                                    ? "fill-yellow-400 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]" 
+                                  c.isFavorite
+                                    ? "fill-yellow-400 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]"
                                     : "text-slate-600 hover:text-slate-400"
-                                )} 
+                                )}
                               />
                             </button>
                           </div>
@@ -249,7 +294,7 @@ export default function FollowUpPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 relative z-10 shrink-0">
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 relative z-10 shrink-0">
                       <div className="text-slate-400">
                         {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                       </div>

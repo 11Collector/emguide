@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { format, startOfMonth, endOfMonth, subMonths, addMonths } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Users, MapPin, ChevronLeft, ChevronRight, Briefcase, Edit2, Check, X, Star } from "lucide-react";
+import { Plus, Users, MapPin, ChevronLeft, ChevronRight, Briefcase, Edit2, Check, X, Star, Search, XCircle } from "lucide-react";
 import Image from "next/image";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/lib/utils";
@@ -15,7 +15,10 @@ export default function NewComersPage() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [filterTop, setFilterTop] = useState(false);
-  
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
+  const [filterPlatform, setFilterPlatform] = useState<string>("");
+
   // Track which comer is being edited
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<any>(null);
@@ -44,6 +47,16 @@ export default function NewComersPage() {
   const monthEnd = endOfMonth(currentDate).getTime();
   let currentMonthComers = (newComers || []).filter(c => c.createdAt >= monthStart && c.createdAt <= monthEnd);
 
+  // Apply search filter
+  currentMonthComers = currentMonthComers.filter(c =>
+    c.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Apply platform filter
+  if (filterPlatform) {
+    currentMonthComers = currentMonthComers.filter(c => c.platform === filterPlatform);
+  }
+
   // Apply 7+ filter (Top Candidate: All fields >= 7)
   if (filterTop) {
     currentMonthComers = currentMonthComers.filter(c => {
@@ -55,15 +68,26 @@ export default function NewComersPage() {
     });
   }
 
+  // Get unique platforms for filter buttons
+  const allPlatforms = Array.from(new Set((newComers || []).map(c => c.platform).filter(Boolean)));
+
+  // Count platforms for sorting (show most common first)
+  const platformCounts = allPlatforms.reduce((acc, p) => {
+    acc[p] = (newComers || []).filter(c => c.platform === p).length;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const sortedPlatforms = allPlatforms.sort((a, b) => (platformCounts[b] || 0) - (platformCounts[a] || 0));
+
   // Sort by Favorite then Total Score (Descending)
   currentMonthComers.sort((a, b) => {
     if (a.isFavorite && !b.isFavorite) return -1;
     if (!a.isFavorite && b.isFavorite) return 1;
 
-    const getScore = (c: any) => 
-      Number(c.scores?.money ?? 0) + 
-      Number(c.scores?.active ?? 0) + 
-      Number(c.scores?.friendly ?? (c.scores as any)?.need ?? (c.scores as any)?.nice ?? 0) + 
+    const getScore = (c: any) =>
+      Number(c.scores?.money ?? 0) +
+      Number(c.scores?.active ?? 0) +
+      Number(c.scores?.friendly ?? (c.scores as any)?.need ?? (c.scores as any)?.nice ?? 0) +
       Number(c.scores?.relation ?? 0);
     return getScore(b) - getScore(a);
   });
@@ -130,12 +154,50 @@ export default function NewComersPage() {
             </motion.p>
           </div>
         </div>
-        <div className="ml-auto flex flex-col items-end">
+        <div className="ml-auto flex flex-col items-end gap-3">
           <div className="text-[10px] font-bold text-pink-400 uppercase tracking-[0.2em]">
             {format(new Date(), "dd MMM yyyy")}
           </div>
+          <button
+            onClick={() => setShowSearch(!showSearch)}
+            className="p-2 text-slate-400 hover:text-pink-400 transition-colors"
+          >
+            <Search size={18} />
+          </button>
         </div>
       </header>
+
+      {/* Search Bar - Toggle */}
+      <AnimatePresence>
+        {showSearch && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-6 relative z-10 overflow-hidden"
+          >
+            <div className="relative flex items-center">
+              <Search size={16} className="absolute left-4 text-slate-400 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="ค้นหาชื่อคน..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                autoFocus
+                className="w-full bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] rounded-2xl pl-10 pr-10 py-3 text-white text-sm placeholder-slate-400 focus:outline-none focus:border-pink-400/50 transition-colors"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-4 text-slate-400 hover:text-white transition-colors"
+                >
+                  <XCircle size={16} />
+                </button>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Month Selector & Count */}
       <div className="flex items-center justify-between bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] rounded-2xl p-2 mb-6 relative z-10">
@@ -156,13 +218,44 @@ export default function NewComersPage() {
         </div>
       </div>
 
+      {/* Platform Filter - Horizontal Scrollable */}
+      <div className="overflow-x-auto scrollbar-hide mb-4 relative z-10 -mx-6 px-6">
+        <div className="flex gap-2 w-max">
+          <button
+            onClick={() => setFilterPlatform("")}
+            className={cn(
+              "px-3 py-1.5 rounded-full text-xs font-bold transition-all border whitespace-nowrap",
+              !filterPlatform
+                ? "bg-pink-500/20 text-pink-300 border-pink-500/30"
+                : "bg-white/5 text-slate-400 border-white/10 hover:bg-white/10"
+            )}
+          >
+            All
+          </button>
+          {sortedPlatforms.map((platform) => (
+            <button
+              key={platform}
+              onClick={() => setFilterPlatform(filterPlatform === platform ? "" : platform)}
+              className={cn(
+                "px-3 py-1.5 rounded-full text-xs font-bold transition-all border whitespace-nowrap",
+                filterPlatform === platform
+                  ? "bg-pink-500 text-white border-pink-400"
+                  : "bg-white/5 text-slate-400 border-white/10 hover:bg-white/10"
+              )}
+            >
+              {platform}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="flex justify-between items-center mb-4 relative z-10 gap-2">
-        <button 
+        <button
           onClick={() => setFilterTop(!filterTop)}
           className={cn(
             "flex-1 px-4 py-2 rounded-full text-xs font-bold transition-all border shadow-lg flex items-center justify-center gap-1.5",
-            filterTop 
-              ? "bg-pink-500 text-white border-pink-400 shadow-pink-500/20" 
+            filterTop
+              ? "bg-pink-500 text-white border-pink-400 shadow-pink-500/20"
               : "bg-white/5 text-slate-400 border-white/10"
           )}
         >

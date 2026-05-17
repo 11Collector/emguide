@@ -177,7 +177,7 @@ export default function NewComersPage() {
             className="mb-6 relative z-10 overflow-hidden"
           >
             <div className="relative flex items-center">
-              <Search size={16} className="absolute left-4 text-slate-400 pointer-events-none" />
+              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-pink-400 pointer-events-none z-10" />
               <input
                 type="text"
                 placeholder="ค้นหาชื่อคน..."

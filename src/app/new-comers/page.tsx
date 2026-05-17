@@ -219,7 +219,11 @@ export default function NewComersPage() {
       </div>
 
       {/* Platform Filter - Horizontal Scrollable */}
-      <div className="overflow-x-auto scrollbar-hide mb-4 relative z-10 -mx-6 px-6">
+      <div className="overflow-x-auto scrollbar-hide mb-4 relative z-10 -mx-6 px-6" style={{
+        backgroundImage: 'linear-gradient(to right, transparent, transparent calc(100% - 20px), rgba(0, 0, 0, 0.3) 100%)',
+        backgroundAttachment: 'local',
+        backgroundRepeat: 'no-repeat'
+      }}>
         <div className="flex gap-2 w-max pr-6">
           <button
             onClick={() => setFilterPlatform("")}

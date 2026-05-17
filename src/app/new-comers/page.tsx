@@ -220,7 +220,7 @@ export default function NewComersPage() {
 
       {/* Platform Filter - Horizontal Scrollable */}
       <div className="overflow-x-auto scrollbar-hide mb-4 relative z-10 -mx-6 px-6" style={{
-        backgroundImage: 'linear-gradient(to right, transparent, transparent calc(100% - 20px), rgba(0, 0, 0, 0.3) 100%)',
+        backgroundImage: 'linear-gradient(to right, transparent, transparent calc(100% - 40px), rgba(0, 0, 0, 0.1) 100%)',
         backgroundAttachment: 'local',
         backgroundRepeat: 'no-repeat'
       }}>

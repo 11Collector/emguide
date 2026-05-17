@@ -160,7 +160,7 @@ export default function FollowUpPage() {
             onClick={() => setShowSearch(!showSearch)}
             className="p-2 text-slate-400 hover:text-emerald-400 transition-colors"
           >
-            <Search size={18} />
+            {showSearch ? <XCircle size={18} /> : <Search size={18} />}
           </button>
         </div>
       </header>

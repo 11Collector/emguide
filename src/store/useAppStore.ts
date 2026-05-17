@@ -16,6 +16,8 @@ export interface CaseRecord {
   completedSteps?: string[];
   isFavorite?: boolean;
   emphasisPack?: string;
+  beginSessions?: boolean[];
+  bridgeJoined?: boolean;
 }
 
 export interface NewComer {
@@ -68,6 +70,8 @@ interface AppState {
   deleteCase: (id: string) => void;
   toggleCaseFavorite: (id: string) => void;
   updateEmphasisPack: (id: string, pack: string) => void;
+  toggleBeginSession: (id: string, sessionIndex: number) => void;
+  toggleBridgeJoined: (id: string) => void;
   celebratedDays: Record<string, boolean>;
   setCelebratedDay: (dateStr: string, isCelebrated: boolean) => void;
 }
@@ -211,6 +215,32 @@ export const useAppStore = create<AppState>()(
       updateEmphasisPack: (id, pack) => set((state) => {
         const updatedCases = state.cases.map(c =>
           c.id === id ? { ...c, emphasisPack: c.emphasisPack === pack ? undefined : pack } : c
+        );
+        const targetCase = updatedCases.find(c => c.id === id);
+        if (db && targetCase) {
+          setDoc(doc(db, "cases", id), targetCase, { merge: true }).catch(e => console.error(e));
+        }
+        return { cases: updatedCases };
+      }),
+      toggleBeginSession: (id, sessionIndex) => set((state) => {
+        const updatedCases = state.cases.map(c => {
+          if (c.id === id) {
+            const sessions = c.beginSessions || [false, false, false, false];
+            const newSessions = [...sessions];
+            newSessions[sessionIndex] = !newSessions[sessionIndex];
+            return { ...c, beginSessions: newSessions };
+          }
+          return c;
+        });
+        const targetCase = updatedCases.find(c => c.id === id);
+        if (db && targetCase) {
+          setDoc(doc(db, "cases", id), targetCase, { merge: true }).catch(e => console.error(e));
+        }
+        return { cases: updatedCases };
+      }),
+      toggleBridgeJoined: (id) => set((state) => {
+        const updatedCases = state.cases.map(c =>
+          c.id === id ? { ...c, bridgeJoined: !c.bridgeJoined } : c
         );
         const targetCase = updatedCases.find(c => c.id === id);
         if (db && targetCase) {

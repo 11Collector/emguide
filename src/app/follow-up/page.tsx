@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { format, startOfMonth, endOfMonth, subMonths, addMonths } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, CheckCircle2, Circle, ChevronDown, ChevronUp, User, ChevronLeft, ChevronRight, Briefcase, ShoppingBag, Edit2, Check, X, Star, Headphones } from "lucide-react";
+import { Plus, CheckCircle2, Circle, ChevronDown, ChevronUp, User, ChevronLeft, ChevronRight, Briefcase, ShoppingBag, Edit2, Check, X, Star, Headphones, BookOpen } from "lucide-react";
 import Image from "next/image";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,7 @@ const PRODUCT_STEPS = ["6W", "ARTISTRY", "ESPRING", "HOUSEHOLD", "SKY", "DETOX"]
 const EMPHASIS_PACKS = ["Boarding", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"];
 
 export default function FollowUpPage() {
-  const { cases, updateCaseStep, updateCaseNotes, toggleCaseFavorite, updateEmphasisPack } = useAppStore();
+  const { cases, updateCaseStep, updateCaseNotes, toggleCaseFavorite, updateEmphasisPack, toggleBeginSession, toggleBridgeJoined } = useAppStore();
   const [isClient, setIsClient] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -189,7 +189,7 @@ export default function FollowUpPage() {
                   )}
                 >
                   {/* Header */}
-                  <div 
+                  <div
                     onClick={() => toggleExpand(c.id)}
                     className="w-full p-4 flex items-center justify-between text-left relative overflow-hidden cursor-pointer"
                   >
@@ -233,6 +233,16 @@ export default function FollowUpPage() {
                               {c.emphasisPack === "Boarding" ? "Boarding" : `Pack ${c.emphasisPack}`}
                             </span>
                           )}
+                          {c.beginSessions && c.beginSessions.some(Boolean) && (
+                            <span className={cn(
+                              "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 border",
+                              c.bridgeJoined
+                                ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-300"
+                                : "bg-cyan-500/20 border-cyan-500/30 text-cyan-300"
+                            )}>
+                              {c.bridgeJoined ? "Bridge" : "Begin"}
+                            </span>
+                          )}
                           <p className="text-slate-400 text-xs truncate font-medium">
                             {c.notes ? c.notes : "ยังไม่มีบันทึกเพิ่มเติม..."}
                           </p>
@@ -244,12 +254,12 @@ export default function FollowUpPage() {
                         {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                       </div>
                     </div>
-                    
+
                     {/* Progress bar background in header */}
                     <div className="absolute bottom-0 left-0 h-1 bg-black/40 w-full">
-                      <div 
-                        className="h-full bg-gradient-to-r from-emerald-400 to-teal-400 shadow-[0_0_10px_rgba(45,212,191,0.8)]" 
-                        style={{ width: `${progress}%` }} 
+                      <div
+                        className="h-full bg-gradient-to-r from-emerald-400 to-teal-400 shadow-[0_0_10px_rgba(45,212,191,0.8)]"
+                        style={{ width: `${progress}%` }}
                       />
                     </div>
                   </div>
@@ -263,6 +273,50 @@ export default function FollowUpPage() {
                         exit={{ height: 0, opacity: 0 }}
                         className="border-t border-white/10 bg-black/20"
                       >
+                        {/* EM Begin & Bridge Section */}
+                        <div className="p-5 border-b border-white/5">
+                          <h4 className="text-[10px] font-extrabold text-cyan-400 uppercase tracking-widest flex items-center gap-1.5 mb-3">
+                            <BookOpen size={12} />
+                            EM Begin
+                          </h4>
+                          <div className="flex flex-wrap gap-2">
+                            {[1, 2, 3, 4].map((session) => {
+                              const isCompleted = c.beginSessions?.[session - 1] ?? false;
+                              return (
+                                <motion.button
+                                  key={session}
+                                  onClick={(e) => { e.stopPropagation(); toggleBeginSession(c.id, session - 1); }}
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  className={cn(
+                                    "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-200 cursor-pointer border",
+                                    isCompleted
+                                      ? "bg-cyan-500 text-white shadow-[0_0_12px_rgba(34,211,238,0.6)] border-cyan-400/50"
+                                      : "bg-white/5 text-slate-400 hover:bg-white/10 hover:text-slate-200 border-white/10"
+                                  )}
+                                >
+                                  {isCompleted ? `✓ S${session}` : `S${session}`}
+                                </motion.button>
+                              );
+                            })}
+                            {c.beginSessions?.filter(Boolean).length === 4 && (
+                              <motion.button
+                                onClick={(e) => { e.stopPropagation(); toggleBridgeJoined(c.id); }}
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                                className={cn(
+                                  "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-200 cursor-pointer border",
+                                  c.bridgeJoined
+                                    ? "bg-emerald-500 text-white shadow-[0_0_12px_rgba(16,185,129,0.6)] border-emerald-400/50"
+                                    : "bg-white/5 text-slate-400 hover:bg-white/10 hover:text-slate-200 border-white/10"
+                                )}
+                              >
+                                {c.bridgeJoined ? "✓ Bridge" : "Bridge"}
+                              </motion.button>
+                            )}
+                          </div>
+                        </div>
+
                         {/* Emphasis Pack Section */}
                         <div className="p-5 border-b border-white/5">
                           <h4 className="text-[10px] font-extrabold text-purple-400 uppercase tracking-widest flex items-center gap-1.5 mb-3">
@@ -272,18 +326,20 @@ export default function FollowUpPage() {
                             {EMPHASIS_PACKS.map((pack) => {
                               const isActive = c.emphasisPack === pack;
                               return (
-                                <button
+                                <motion.button
                                   key={pack}
                                   onClick={(e) => { e.stopPropagation(); updateEmphasisPack(c.id, pack); }}
+                                  whileHover={{ scale: 1.12 }}
+                                  whileTap={{ scale: 0.95 }}
                                   className={cn(
-                                    "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all duration-200",
+                                    "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all duration-200 cursor-pointer",
                                     isActive
-                                      ? "bg-purple-500 text-white shadow-[0_0_10px_rgba(168,85,247,0.5)]"
-                                      : "bg-white/5 text-slate-400 hover:bg-white/10 hover:text-slate-200"
+                                      ? "bg-purple-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.7)] border border-purple-400/50"
+                                      : "bg-white/5 text-slate-400 hover:bg-white/15 hover:text-slate-100 hover:shadow-[0_0_12px_rgba(168,85,247,0.3)] border border-transparent hover:border-purple-500/30"
                                   )}
                                 >
                                   {pack === "Boarding" ? "Boarding" : `P${pack}`}
-                                </button>
+                                </motion.button>
                               );
                             })}
                           </div>

@@ -247,29 +247,26 @@ export default function FollowUpPage() {
                       )}>
                         <User size={24} className="drop-shadow-lg" />
                       </div>
-                      <div className="flex-1 min-w-0 pr-10">
-                        <div className="flex justify-between items-center w-full mb-1">
-                          <div className="flex items-center gap-2 mr-2">
-                            <h3 className="font-extrabold text-white text-base truncate max-w-[150px]">{c.name}</h3>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleCaseFavorite(c.id);
-                              }}
-                              className="transition-all active:scale-90 shrink-0"
-                            >
-                              <Star
-                                size={16}
-                                className={cn(
-                                  "transition-colors",
-                                  c.isFavorite
-                                    ? "fill-yellow-400 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]"
-                                    : "text-slate-600 hover:text-slate-400"
-                                )}
-                              />
-                            </button>
-                          </div>
-                          <span className="text-emerald-400 font-extrabold text-sm drop-shadow-md">{progress}%</span>
+                      <div className="flex-1 min-w-0 pr-16">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-extrabold text-white text-base truncate max-w-[150px]">{c.name}</h3>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleCaseFavorite(c.id);
+                            }}
+                            className="transition-all active:scale-90 shrink-0"
+                          >
+                            <Star
+                              size={16}
+                              className={cn(
+                                "transition-colors",
+                                c.isFavorite
+                                  ? "fill-yellow-400 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]"
+                                  : "text-slate-600 hover:text-slate-400"
+                              )}
+                            />
+                          </button>
                         </div>
                         <div className="flex items-center gap-2 flex-wrap">
                           {c.emphasisPack && (
@@ -294,7 +291,9 @@ export default function FollowUpPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 relative z-10 shrink-0">
+                    {/* % and chevron pinned to top-right always */}
+                    <div className="absolute right-4 top-4 flex flex-col items-end gap-1 z-10">
+                      <span className="text-emerald-400 font-extrabold text-sm drop-shadow-md leading-none">{progress}%</span>
                       <div className="text-slate-400">
                         {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                       </div>

@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/lib/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogIn, LogOut, User, ChevronDown } from "lucide-react";
+import { LogIn, LogOut, User } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -15,12 +15,12 @@ export function LoginButton() {
   if (!user) {
     return (
       <motion.button
-        whileTap={{ scale: 0.95 }}
+        whileTap={{ scale: 0.9 }}
         onClick={signInWithGoogle}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-all"
+        className="p-1.5 text-slate-500 hover:text-blue-400 transition-colors"
+        title="Login"
       >
-        <LogIn size={13} />
-        Login
+        <LogIn size={16} />
       </motion.button>
     );
   }
@@ -28,17 +28,18 @@ export function LoginButton() {
   return (
     <div className="relative">
       <motion.button
-        whileTap={{ scale: 0.95 }}
+        whileTap={{ scale: 0.9 }}
         onClick={() => setShowMenu(!showMenu)}
-        className="flex items-center gap-1.5 px-2 py-1.5 rounded-full text-xs font-bold border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 transition-all"
+        className="w-7 h-7 rounded-full overflow-hidden border border-blue-400/40 hover:border-blue-400 transition-all"
+        title={user.displayName || ""}
       >
         {user.photoURL ? (
-          <Image src={user.photoURL} alt="avatar" width={18} height={18} className="rounded-full" />
+          <Image src={user.photoURL} alt="avatar" width={28} height={28} className="rounded-full" />
         ) : (
-          <User size={13} />
+          <div className="w-full h-full bg-blue-500/20 flex items-center justify-center">
+            <User size={14} className="text-blue-400" />
+          </div>
         )}
-        <span className="max-w-[80px] truncate">{user.displayName?.split(" ")[0]}</span>
-        <ChevronDown size={11} />
       </motion.button>
 
       <AnimatePresence>
@@ -55,12 +56,12 @@ export function LoginButton() {
               initial={{ opacity: 0, scale: 0.95, y: -5 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -5 }}
-              className="absolute right-0 top-full mt-2 bg-[#0F172A] border border-white/10 rounded-2xl p-3 shadow-[0_8px_32px_rgba(0,0,0,0.5)] z-50 min-w-[160px]"
+              className="absolute right-0 top-full mt-2 bg-[#0F172A] border border-white/10 rounded-2xl p-3 shadow-[0_8px_32px_rgba(0,0,0,0.5)] z-50 min-w-[150px]"
             >
-              <p className="text-[10px] text-slate-400 mb-2 px-1 truncate">{user.email}</p>
+              <p className="text-[10px] text-slate-500 mb-2 px-1 truncate">{user.email}</p>
               <button
                 onClick={() => { logout(); setShowMenu(false); }}
-                className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-xs font-bold text-red-400 hover:bg-red-500/10 transition-colors"
+                className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
               >
                 <LogOut size={13} />
                 Logout

@@ -84,38 +84,16 @@ export function LoginButton() {
               initial={{ opacity: 0, scale: 0.95, y: -5 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -5 }}
-              className="absolute right-0 top-full mt-2 bg-[#0F172A] border border-white/10 rounded-2xl p-3 shadow-[0_8px_32px_rgba(0,0,0,0.5)] z-50 min-w-[160px]"
+              className="absolute right-0 top-full mt-2 bg-[#0F172A] border border-white/10 rounded-xl px-1 py-1 shadow-[0_8px_32px_rgba(0,0,0,0.5)] z-50"
             >
-              {/* Avatar + Name */}
-              <div className="flex items-center gap-2.5 px-1 mb-3">
-                {user.photoURL ? (
-                  <Image src={user.photoURL} alt="avatar" width={32} height={32} className="rounded-full shrink-0" />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
-                    <User size={16} className="text-blue-400" />
-                  </div>
-                )}
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-white truncate">{user.displayName?.split(" ")[0]}</p>
-                  <p className="text-[10px] text-slate-500 truncate">{user.email}</p>
-                </div>
-              </div>
-
-              <div className="border-t border-white/5 pt-2">
-                <button
-                  onClick={handleLogout}
-                  disabled={isLoggingOut}
-                  className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all disabled:opacity-50"
-                >
-                  <motion.div
-                    animate={isLoggingOut ? { rotate: 360 } : {}}
-                    transition={{ duration: 0.6, repeat: Infinity, ease: "linear" }}
-                  >
-                    <LogOut size={13} />
-                  </motion.div>
-                  {isLoggingOut ? "กำลัง Logout..." : "Logout"}
-                </button>
-              </div>
+              <button
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all disabled:opacity-50 whitespace-nowrap"
+              >
+                <LogOut size={12} />
+                {isLoggingOut ? "กำลัง Logout..." : "Logout"}
+              </button>
             </motion.div>
           </>
         )}

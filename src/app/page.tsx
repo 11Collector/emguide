@@ -7,6 +7,7 @@ import { Download, CheckSquare, Briefcase, Users, UserPlus, Sparkles, ChevronRig
 import Link from "next/link";
 import { format } from "date-fns";
 import { PWAInstall } from "@/components/pwa-install";
+import { LoginButton } from "@/components/auth/LoginButton";
 
 const QUOTES = [
   "เชื่อ UL ปรึกษาแบบคิดมาก่อนแล้ว",
@@ -90,8 +91,11 @@ export default function HomePage() {
         <div className="text-slate-400 text-xs font-bold uppercase tracking-widest">
           WELCOME TO EM DAILY
         </div>
-        <div className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.2em]">
-          {format(new Date(), "dd MMM yyyy")}
+        <div className="flex items-center gap-2">
+          <div className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.2em]">
+            {format(new Date(), "dd MMM yyyy")}
+          </div>
+          <LoginButton />
         </div>
       </div>
 

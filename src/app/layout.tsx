@@ -33,6 +33,8 @@ export const viewport: Viewport = {
 };
 
 import { BackgroundMusic } from "@/components/audio/BackgroundMusic";
+import { AuthProvider } from "@/lib/AuthContext";
+import { FirebaseSyncProvider } from "@/components/auth/FirebaseSyncProvider";
 
 export default function RootLayout({
   children,
@@ -45,11 +47,15 @@ export default function RootLayout({
       className={`${kanitFont.variable} font-sans h-full antialiased`}
     >
       <body className="min-h-full bg-[#030712] text-slate-50 flex justify-center selection:bg-blue-500/30">
-        <main className="w-full max-w-md min-h-screen relative overflow-x-hidden pt-4 pb-24 bg-background shadow-[0_0_40px_rgba(212,175,55,0.05)] flex flex-col">
-          {children}
-        </main>
-        <BottomNav />
-        <BackgroundMusic />
+        <AuthProvider>
+          <FirebaseSyncProvider>
+            <main className="w-full max-w-md min-h-screen relative overflow-x-hidden pt-4 pb-24 bg-background shadow-[0_0_40px_rgba(212,175,55,0.05)] flex flex-col">
+              {children}
+            </main>
+            <BottomNav />
+            <BackgroundMusic />
+          </FirebaseSyncProvider>
+        </AuthProvider>
       </body>
     </html>
   );

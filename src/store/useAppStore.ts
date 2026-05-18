@@ -1,8 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { format } from 'date-fns';
-import { db } from '../lib/firebase';
-import { doc, setDoc, collection, addDoc, getDocs } from 'firebase/firestore';
 
 export interface CaseRecord {
   id: string;
@@ -100,160 +98,65 @@ export const useAppStore = create<AppState>()(
       }),
       addNewComer: (comer) => set((state) => {
         const newRecord = { ...comer, id: Date.now().toString(), createdAt: Date.now() };
-        if (db) {
-          setDoc(doc(db, "newComers", newRecord.id), newRecord).catch(e => console.error("Firebase sync error", e));
-        }
-        return {
-          newComers: [newRecord, ...(state.newComers || [])]
-        };
+        return { newComers: [newRecord, ...(state.newComers || [])] };
       }),
-      updateNewComer: (id, updates) => set((state) => {
-        const updatedComers = (state.newComers || []).map(c => 
-          c.id === id ? { ...c, ...updates } : c
-        );
-        const target = updatedComers.find(c => c.id === id);
-        if (db && target) {
-          setDoc(doc(db, "newComers", id), target).catch(e => console.error(e));
-        }
-        return { newComers: updatedComers };
-      }),
-      deleteNewComer: (id) => set((state) => {
-        const updatedComers = (state.newComers || []).filter(c => c.id !== id);
-        if (db) {
-          const { deleteDoc } = require('firebase/firestore');
-          deleteDoc(doc(db, "newComers", id)).catch((e: any) => console.error(e));
-        }
-        return { newComers: updatedComers };
-      }),
-      toggleNewComerFavorite: (id) => set((state) => {
-        const updatedComers = (state.newComers || []).map(c => 
-          c.id === id ? { ...c, isFavorite: !c.isFavorite } : c
-        );
-        const target = updatedComers.find(c => c.id === id);
-        if (db && target) {
-          setDoc(doc(db, "newComers", id), target, { merge: true }).catch(e => console.error(e));
-        }
-        return { newComers: updatedComers };
-      }),
+      updateNewComer: (id, updates) => set((state) => ({
+        newComers: (state.newComers || []).map(c => c.id === id ? { ...c, ...updates } : c)
+      })),
+      deleteNewComer: (id) => set((state) => ({
+        newComers: (state.newComers || []).filter(c => c.id !== id)
+      })),
+      toggleNewComerFavorite: (id) => set((state) => ({
+        newComers: (state.newComers || []).map(c => c.id === id ? { ...c, isFavorite: !c.isFavorite } : c)
+      })),
       addCase: (newCase) => set((state) => {
         const initialSteps = newCase.type === "BM" ? ["BM"] : newCase.type === "EM6W" ? ["6W"] : [];
-        const finalCreatedAt = newCase.createdAt || Date.now();
-        const caseRecord = { ...newCase, id: Date.now().toString(), createdAt: finalCreatedAt, completedSteps: initialSteps };
-        if (db) {
-           setDoc(doc(db, "cases", caseRecord.id), caseRecord).catch(e => console.error("Firebase sync error", e));
-        }
-        return {
-          cases: [caseRecord, ...state.cases]
-        };
+        const caseRecord = { ...newCase, id: Date.now().toString(), createdAt: newCase.createdAt || Date.now(), completedSteps: initialSteps };
+        return { cases: [caseRecord, ...state.cases] };
       }),
-      updateCaseStage: (id, stage) => set((state) => {
-        const updatedCases = state.cases.map(c => c.id === id ? { ...c, stage } : c);
-        const targetCase = updatedCases.find(c => c.id === id);
-        if (db && targetCase) {
-          setDoc(doc(db, "cases", id), targetCase).catch(e => console.error(e));
-        }
-        return { cases: updatedCases };
-      }),
-      updateCaseStep: (id: string, step: string) => set((state) => {
-        const updatedCases = state.cases.map(c => {
-          if (c.id === id) {
-            const steps = c.completedSteps || [];
-            const newSteps = steps.includes(step) ? steps.filter(s => s !== step) : [...steps, step];
-            return { ...c, completedSteps: newSteps };
-          }
-          return c;
-        });
-        const targetCase = updatedCases.find(c => c.id === id);
-        if (db && targetCase) {
-          setDoc(doc(db, "cases", id), targetCase).catch(e => console.error(e));
-        }
-        return { cases: updatedCases };
-      }),
-      updateCaseNotes: (id: string, notes: string) => set((state) => {
-        const updatedCases = state.cases.map(c => c.id === id ? { ...c, notes } : c);
-        const targetCase = updatedCases.find(c => c.id === id);
-        if (db && targetCase) {
-          setDoc(doc(db, "cases", id), targetCase).catch(e => console.error(e));
-        }
-        return { cases: updatedCases };
-      }),
-      toggleCaseSlide: (caseId, slideId) => set((state) => {
-        const updatedCases = state.cases.map(c => {
-          if (c.id === caseId) {
-            const currentSlides = c.slides || [];
-            const newSlides = currentSlides.includes(slideId)
-              ? currentSlides.filter(s => s !== slideId)
-              : [...currentSlides, slideId];
-            return { ...c, slides: newSlides };
-          }
-          return c;
-        });
-        const targetCase = updatedCases.find(c => c.id === caseId);
-        if (db && targetCase) {
-          setDoc(doc(db, "cases", caseId), targetCase).catch(e => console.error(e));
-        }
-        return { cases: updatedCases };
-      }),
-      deleteCase: (id) => set((state) => {
-        const updatedCases = state.cases.filter(c => c.id !== id);
-        if (db) {
-          const { deleteDoc } = require('firebase/firestore');
-          deleteDoc(doc(db, "cases", id)).catch((e: any) => console.error(e));
-        }
-        return { cases: updatedCases };
-      }),
-      toggleCaseFavorite: (id) => set((state) => {
-        const updatedCases = state.cases.map(c =>
-          c.id === id ? { ...c, isFavorite: !c.isFavorite } : c
-        );
-        const targetCase = updatedCases.find(c => c.id === id);
-        if (db && targetCase) {
-          setDoc(doc(db, "cases", id), targetCase, { merge: true }).catch(e => console.error(e));
-        }
-        return { cases: updatedCases };
-      }),
-      updateEmphasisPack: (id, pack) => set((state) => {
-        const updatedCases = state.cases.map(c =>
-          c.id === id ? { ...c, emphasisPack: c.emphasisPack === pack ? undefined : pack } : c
-        );
-        const targetCase = updatedCases.find(c => c.id === id);
-        if (db && targetCase) {
-          setDoc(doc(db, "cases", id), targetCase, { merge: true }).catch(e => console.error(e));
-        }
-        return { cases: updatedCases };
-      }),
-      toggleBeginSession: (id, sessionIndex) => set((state) => {
-        const updatedCases = state.cases.map(c => {
-          if (c.id === id) {
-            const sessions = c.beginSessions || [false, false, false, false];
-            const newSessions = [...sessions];
-            newSessions[sessionIndex] = !newSessions[sessionIndex];
-            return { ...c, beginSessions: newSessions };
-          }
-          return c;
-        });
-        const targetCase = updatedCases.find(c => c.id === id);
-        if (db && targetCase) {
-          setDoc(doc(db, "cases", id), targetCase, { merge: true }).catch(e => console.error(e));
-        }
-        return { cases: updatedCases };
-      }),
-      toggleBridgeJoined: (id) => set((state) => {
-        const updatedCases = state.cases.map(c =>
-          c.id === id ? { ...c, bridgeJoined: !c.bridgeJoined } : c
-        );
-        const targetCase = updatedCases.find(c => c.id === id);
-        if (db && targetCase) {
-          setDoc(doc(db, "cases", id), targetCase, { merge: true }).catch(e => console.error(e));
-        }
-        return { cases: updatedCases };
-      }),
+      updateCaseStage: (id, stage) => set((state) => ({
+        cases: state.cases.map(c => c.id === id ? { ...c, stage } : c)
+      })),
+      updateCaseStep: (id: string, step: string) => set((state) => ({
+        cases: state.cases.map(c => {
+          if (c.id !== id) return c;
+          const steps = c.completedSteps || [];
+          return { ...c, completedSteps: steps.includes(step) ? steps.filter(s => s !== step) : [...steps, step] };
+        })
+      })),
+      updateCaseNotes: (id: string, notes: string) => set((state) => ({
+        cases: state.cases.map(c => c.id === id ? { ...c, notes } : c)
+      })),
+      toggleCaseSlide: (caseId, slideId) => set((state) => ({
+        cases: state.cases.map(c => {
+          if (c.id !== caseId) return c;
+          const slides = c.slides || [];
+          return { ...c, slides: slides.includes(slideId) ? slides.filter(s => s !== slideId) : [...slides, slideId] };
+        })
+      })),
+      deleteCase: (id) => set((state) => ({
+        cases: state.cases.filter(c => c.id !== id)
+      })),
+      toggleCaseFavorite: (id) => set((state) => ({
+        cases: state.cases.map(c => c.id === id ? { ...c, isFavorite: !c.isFavorite } : c)
+      })),
+      updateEmphasisPack: (id, pack) => set((state) => ({
+        cases: state.cases.map(c => c.id === id ? { ...c, emphasisPack: c.emphasisPack === pack ? undefined : pack } : c)
+      })),
+      toggleBeginSession: (id, sessionIndex) => set((state) => ({
+        cases: state.cases.map(c => {
+          if (c.id !== id) return c;
+          const sessions = [...(c.beginSessions || [false, false, false, false])];
+          sessions[sessionIndex] = !sessions[sessionIndex];
+          return { ...c, beginSessions: sessions };
+        })
+      })),
+      toggleBridgeJoined: (id) => set((state) => ({
+        cases: state.cases.map(c => c.id === id ? { ...c, bridgeJoined: !c.bridgeJoined } : c)
+      })),
       setPV: (amount, monthStr) => set((state) => {
         const actualMonth = monthStr || format(new Date(), "yyyy-MM");
         const newMonthlyPV = { ...(state.monthlyPV || {}), [actualMonth]: amount };
-        if (db) {
-           setDoc(doc(db, "userStats", "pv"), { totalPV: amount, monthlyPV: newMonthlyPV }, { merge: true }).catch(e => console.error(e));
-        }
         return {
           totalPV: amount,
           monthlyPV: newMonthlyPV
@@ -274,10 +177,6 @@ export const useAppStore = create<AppState>()(
             [dateStr]: { ...currentData, tasks: newTasks }
           }
         };
-
-        if (db) {
-           setDoc(doc(db, "dailyStatus", dateStr), nextState.dailyStatus[dateStr], { merge: true }).catch(e => console.error(e));
-        }
 
         return nextState;
       }),
@@ -303,10 +202,6 @@ export const useAppStore = create<AppState>()(
             }
           }
         };
-
-        if (db) {
-           setDoc(doc(db, "dailyStatus", dateStr), nextState.dailyStatus[dateStr], { merge: true }).catch(e => console.error(e));
-        }
 
         return nextState;
       }),
@@ -350,55 +245,14 @@ export const useAppStore = create<AppState>()(
       },
       toggleReadBook: (bookId) => set((state) => {
         const isRead = state.readBooks?.includes(bookId);
-        const newBooks = isRead 
-          ? state.readBooks.filter(id => id !== bookId)
-          : [...(state.readBooks || []), bookId];
-          
-        if (db) {
-          setDoc(doc(db, "userStats", "books"), { readBooks: newBooks }).catch(e => console.error(e));
-        }
-        return { readBooks: newBooks };
+        return {
+          readBooks: isRead
+            ? state.readBooks.filter(id => id !== bookId)
+            : [...(state.readBooks || []), bookId]
+        };
       }),
       fetchInitialData: async () => {
-        if (!db) return;
-        try {
-          // Fetch cases
-          const casesSnap = await getDocs(collection(db, "cases"));
-          const fetchedCases: CaseRecord[] = [];
-          casesSnap.forEach(doc => {
-            fetchedCases.push(doc.data() as CaseRecord);
-          });
-          // Sort cases newest first
-          fetchedCases.sort((a, b) => b.createdAt - a.createdAt);
-
-          // Fetch PV
-          const pvSnap = await getDocs(collection(db, "userStats"));
-          let fetchedPV = get().totalPV;
-          let fetchedMonthlyPV = get().monthlyPV || {};
-          let fetchedBooks = get().readBooks || [];
-          pvSnap.forEach(doc => {
-            if (doc.id === "pv") {
-              fetchedPV = doc.data().totalPV || 0;
-              if (doc.data().monthlyPV) {
-                fetchedMonthlyPV = doc.data().monthlyPV;
-              }
-            }
-            if (doc.id === "books") {
-              fetchedBooks = doc.data().readBooks || [];
-            }
-          });
-
-          // Fetch DailyStatus
-          const dailySnap = await getDocs(collection(db, "dailyStatus"));
-          const fetchedDaily: DailyActivity = {};
-          dailySnap.forEach(doc => {
-            fetchedDaily[doc.id] = { tasks: doc.data().tasks || [] };
-          });
-
-          set({ cases: fetchedCases, totalPV: fetchedPV, monthlyPV: fetchedMonthlyPV, dailyStatus: fetchedDaily, readBooks: fetchedBooks });
-        } catch (error) {
-          console.error("Failed to fetch initial data from Firebase", error);
-        }
+        // Now handled by useFirebaseSync
       }
     }),
     {

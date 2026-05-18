@@ -3,11 +3,12 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { Download, CheckSquare, Briefcase, Users, UserPlus, Sparkles, ChevronRight, Play, RefreshCw } from "lucide-react";
+import { CheckSquare, Briefcase, Users, UserPlus, Sparkles, ChevronRight, Play, RefreshCw } from "lucide-react";
 import Link from "next/link";
-import { format } from "date-fns";
+import { format, startOfDay, endOfDay } from "date-fns";
 import { PWAInstall } from "@/components/pwa-install";
 import { LoginButton } from "@/components/auth/LoginButton";
+import { useAppStore } from "@/store/useAppStore";
 
 const QUOTES = [
   "เชื่อ UL ปรึกษาแบบคิดมาก่อนแล้ว",
@@ -64,8 +65,14 @@ const APP_FEATURES = [
 ];
 
 export default function HomePage() {
+  const { newComers } = useAppStore();
   const [quote, setQuote] = useState("");
   const [quoteKey, setQuoteKey] = useState(0);
+
+  const todayComersCount = (newComers || []).filter(c => {
+    const now = new Date();
+    return c.createdAt >= startOfDay(now).getTime() && c.createdAt <= endOfDay(now).getTime();
+  }).length;
 
   useEffect(() => {
     // Random quote based on the day of the year so it changes daily
@@ -163,25 +170,34 @@ export default function HomePage() {
           🎯 Tools
         </h3>
         <div className="grid grid-cols-2 gap-3">
-          {APP_FEATURES.map((feat, idx) => (
-            <motion.div
-              key={idx}
-              className="h-full"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.4 + (idx * 0.1) }}
-            >
-              <Link href={feat.href} className={`bg-gradient-to-br ${feat.color} backdrop-blur-sm border ${feat.border} rounded-2xl p-4 flex flex-col items-center text-center gap-2 hover:brightness-110 active:scale-[0.98] transition-all h-full`}>
-                <div className="bg-black/20 p-3 rounded-xl shadow-inner shrink-0">
-                  {feat.icon}
-                </div>
-                <div className="flex-1 flex flex-col justify-center w-full mt-1">
-                  <h4 className="font-bold text-white text-[13px] leading-tight mb-1">{feat.title}</h4>
-                  <p className="text-[10px] text-slate-300 line-clamp-2 leading-snug">{feat.desc}</p>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
+          {APP_FEATURES.map((feat, idx) => {
+            const isNewComers = feat.href === "/new-comers";
+            return (
+              <motion.div
+                key={idx}
+                className="h-full"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.4 + (idx * 0.1) }}
+              >
+                <Link href={feat.href} className={`bg-gradient-to-br ${feat.color} backdrop-blur-sm border ${feat.border} rounded-2xl p-4 flex flex-col items-center text-center gap-2 hover:brightness-110 active:scale-[0.98] transition-all h-full relative`}>
+                  {isNewComers && (
+                    <div className="absolute top-2 right-2 flex items-center gap-1 bg-sky-500/20 border border-sky-500/30 rounded-full px-2 py-0.5">
+                      <span className="text-sky-300 font-bold text-[10px]">{todayComersCount}</span>
+                      <span className="text-sky-400/70 text-[9px]">วันนี้</span>
+                    </div>
+                  )}
+                  <div className="bg-black/20 p-3 rounded-xl shadow-inner shrink-0">
+                    {feat.icon}
+                  </div>
+                  <div className="flex-1 flex flex-col justify-center w-full mt-1">
+                    <h4 className="font-bold text-white text-[13px] leading-tight mb-1">{feat.title}</h4>
+                    <p className="text-[10px] text-slate-300 line-clamp-2 leading-snug">{feat.desc}</p>
+                  </div>
+                </Link>
+              </motion.div>
+            );
+          })}
         </div>
       </motion.div>
 

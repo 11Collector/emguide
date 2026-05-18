@@ -76,11 +76,11 @@ export default function EmphasisPackPage() {
           >
             {/* Subtle gradient background on hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-red-500/0 to-orange-500/0 group-hover:from-red-500/10 group-hover:to-orange-500/10 transition-colors" />
-            
+
             <div className="w-10 h-10 bg-red-500/10 rounded-full flex items-center justify-center text-red-500 group-hover:bg-red-500 group-hover:text-white transition-all relative z-10">
               <Play size={16} className="ml-1" fill="currentColor" />
             </div>
-            
+
             <div className="text-center relative z-10">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Pack</span>
               <span className="text-xl font-black text-white">{pack.id}</span>

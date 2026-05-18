@@ -6,8 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
 
 const PLAYLIST = [
-  { id: 1, title: "Light Of Life", url: "/audio/light-of-life.mp3" },
-  { id: 2, title: "Begins", url: "/audio/begins.mp3" },
+  { id: 1, title: "Begins", url: "/audio/begins.mp3" },
+  { id: 2, title: "Light Of Life", url: "/audio/light-of-life.mp3" },
   { id: 3, title: "เวลาที่เหลือ", url: "/audio/wela-tee-lua.mp3" },
   { id: 4, title: "สุดแรง", url: "/audio/sud-raeng.mp3" },
   { id: 5, title: "เนบิวลา", url: "/audio/nebula.mp3" },

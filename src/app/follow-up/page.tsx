@@ -323,23 +323,23 @@ export default function FollowUpPage() {
                             <BookOpen size={12} />
                             EM Begin
                           </h4>
-                          <div className="flex flex-wrap gap-2">
-                            {[1, 2, 3, 4].map((session) => {
-                              const isCompleted = c.beginSessions?.[session - 1] ?? false;
+                          <div className="flex flex-nowrap gap-2 overflow-x-auto scrollbar-hide -mx-5 px-5 py-1">
+                            {["Life Goals", "How To Start", "Question Mark", "World Class Business"].map((label, idx) => {
+                              const isCompleted = c.beginSessions?.[idx] ?? false;
                               return (
                                 <motion.button
-                                  key={session}
-                                  onClick={(e) => { e.stopPropagation(); toggleBeginSession(c.id, session - 1); }}
+                                  key={label}
+                                  onClick={(e) => { e.stopPropagation(); toggleBeginSession(c.id, idx); }}
                                   whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.95 }}
                                   className={cn(
-                                    "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-200 cursor-pointer border",
+                                    "shrink-0 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-200 cursor-pointer border",
                                     isCompleted
-                                      ? "bg-cyan-500 text-white shadow-[0_0_12px_rgba(34,211,238,0.6)] border-cyan-400/50"
+                                      ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/40"
                                       : "bg-white/5 text-slate-400 hover:bg-white/10 hover:text-slate-200 border-white/10"
                                   )}
                                 >
-                                  {isCompleted ? `✓ S${session}` : `S${session}`}
+                                  {label}
                                 </motion.button>
                               );
                             })}
@@ -351,11 +351,11 @@ export default function FollowUpPage() {
                                 className={cn(
                                   "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-200 cursor-pointer border",
                                   c.bridgeJoined
-                                    ? "bg-emerald-500 text-white shadow-[0_0_12px_rgba(16,185,129,0.6)] border-emerald-400/50"
+                                    ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
                                     : "bg-white/5 text-slate-400 hover:bg-white/10 hover:text-slate-200 border-white/10"
                                 )}
                               >
-                                {c.bridgeJoined ? "✓ Bridge" : "Bridge"}
+                                Bridge
                               </motion.button>
                             )}
                           </div>

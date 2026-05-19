@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ChevronLeft, Play, LayoutGrid } from "lucide-react";
 import Link from "next/link";
 
+
 const PACKS = [
   { id: 1, url: "https://youtube.com/playlist?list=PLCvOGvpolnHLh3qqdebSRQol8_QYFjOYU&si=wFLoacIYzb19mnAj" },
   { id: 2, url: "https://youtube.com/playlist?list=PLCvOGvpolnHJiC-KNqdxLMpIHsCR6pWAp&si=5IdWk2-5OUu-PhYs" },
@@ -61,7 +62,7 @@ export default function EmphasisPackPage() {
         </p>
       </motion.div>
 
-      {/* Grid of Packs */}
+      {/* Pack 1–15 */}
       <div className="grid grid-cols-3 gap-2 sm:gap-4">
         {PACKS.map((pack, idx) => (
           <motion.a

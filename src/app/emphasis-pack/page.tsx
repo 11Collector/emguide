@@ -4,12 +4,6 @@ import { motion } from "framer-motion";
 import { ChevronLeft, Play, LayoutGrid } from "lucide-react";
 import Link from "next/link";
 
-const BOARDING_VIDEOS = [
-  { no: 1, title: "Why Emphasis", speaker: "ภาคภูมิ นิติธรรม", url: "https://youtu.be/LuIrrAqeVZo?si=vYEXN6s25XoeGLu9" },
-  { no: 2, title: "Business Partnership", speaker: "วิรุฬ โตศะศุข", url: "https://youtu.be/Az8wfW6jpuc?si=rRMFgoUeHWx5c46_" },
-  { no: 3, title: "Boarding Pack", speaker: "พิมสาย ตันมณี & ศุภนาถ คุณากรจิตติรักษ์", url: "https://youtu.be/nc169AZdtcg" },
-  { no: 4, title: "Boarding Pack", speaker: "ภญ.จิรภัทร์ ไกรพธารากุล & สธนวัฒ อัครพงศ์ไพศาล", url: "https://youtu.be/mUdEtasjc8c" },
-];
 
 const PACKS = [
   { id: 1, url: "https://youtube.com/playlist?list=PLCvOGvpolnHLh3qqdebSRQol8_QYFjOYU&si=wFLoacIYzb19mnAj" },
@@ -68,32 +62,7 @@ export default function EmphasisPackPage() {
         </p>
       </motion.div>
 
-      {/* Boarding Pack */}
-      <div className="mb-6">
-        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Boarding Pack</span>
-        <div className="space-y-1.5">
-          {BOARDING_VIDEOS.map((v, idx) => (
-            <motion.a
-              key={idx}
-              href={v.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 + idx * 0.04 }}
-              className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 hover:bg-red-500/10 hover:border-red-500/20 active:scale-[0.98] transition-all group"
-            >
-              <div className="w-6 h-6 rounded-full bg-red-500/10 flex items-center justify-center shrink-0 group-hover:bg-red-500/20 transition-all">
-                <Play size={10} className="text-red-400 ml-0.5" fill="currentColor" />
-              </div>
-              <p className="text-xs text-slate-300 truncate flex-1">{v.speaker}</p>
-            </motion.a>
-          ))}
-        </div>
-      </div>
-
       {/* Pack 1–15 */}
-      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Pack 1 – 15</span>
       <div className="grid grid-cols-3 gap-2 sm:gap-4">
         {PACKS.map((pack, idx) => (
           <motion.a

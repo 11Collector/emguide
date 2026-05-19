@@ -4,6 +4,13 @@ import { motion } from "framer-motion";
 import { ChevronLeft, Play, LayoutGrid } from "lucide-react";
 import Link from "next/link";
 
+const BOARDING_VIDEOS = [
+  { no: 1, title: "Why Emphasis", speaker: "ภาคภูมิ นิติธรรม", url: "https://youtu.be/LuIrrAqeVZo?si=vYEXN6s25XoeGLu9" },
+  { no: 2, title: "Business Partnership", speaker: "วิรุฬ โตศะศุข", url: "https://youtu.be/Az8wfW6jpuc?si=rRMFgoUeHWx5c46_" },
+  { no: 3, title: "Boarding Pack", speaker: "พิมสาย ตันมณี & ศุภนาถ คุณากรจิตติรักษ์", url: "https://youtu.be/nc169AZdtcg" },
+  { no: 4, title: "Boarding Pack", speaker: "ภญ.จิรภัทร์ ไกรพธารากุล & สธนวัฒ อัครพงศ์ไพศาล", url: "https://youtu.be/mUdEtasjc8c" },
+];
+
 const PACKS = [
   { id: 1, url: "https://youtube.com/playlist?list=PLCvOGvpolnHLh3qqdebSRQol8_QYFjOYU&si=wFLoacIYzb19mnAj" },
   { id: 2, url: "https://youtube.com/playlist?list=PLCvOGvpolnHJiC-KNqdxLMpIHsCR6pWAp&si=5IdWk2-5OUu-PhYs" },
@@ -61,7 +68,42 @@ export default function EmphasisPackPage() {
         </p>
       </motion.div>
 
-      {/* Grid of Packs */}
+      {/* Boarding Pack */}
+      <div className="mb-8">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-2 h-2 rounded-full bg-purple-400" />
+          <span className="text-xs font-bold text-purple-400 uppercase tracking-widest">Boarding Pack</span>
+        </div>
+        <div className="space-y-2">
+          {BOARDING_VIDEOS.map((v, idx) => (
+            <motion.a
+              key={idx}
+              href={v.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 + idx * 0.05 }}
+              className="flex items-center gap-3 bg-white/5 border border-purple-500/20 rounded-2xl px-4 py-3 hover:bg-purple-500/10 active:scale-[0.98] transition-all group"
+            >
+              <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center shrink-0 group-hover:bg-purple-500 transition-all">
+                <Play size={13} className="text-purple-300 group-hover:text-white ml-0.5" fill="currentColor" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] text-purple-400 font-bold uppercase tracking-wider">{v.title} {v.no}</p>
+                <p className="text-xs text-slate-300 font-medium truncate">{v.speaker}</p>
+              </div>
+              <span className="text-[10px] text-slate-500 shrink-0">YouTube →</span>
+            </motion.a>
+          ))}
+        </div>
+      </div>
+
+      {/* Pack 1–15 */}
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-2 h-2 rounded-full bg-red-400" />
+        <span className="text-xs font-bold text-red-400 uppercase tracking-widest">Pack 1 – 15</span>
+      </div>
       <div className="grid grid-cols-3 gap-2 sm:gap-4">
         {PACKS.map((pack, idx) => (
           <motion.a

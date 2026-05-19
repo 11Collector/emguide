@@ -69,41 +69,32 @@ export default function EmphasisPackPage() {
       </motion.div>
 
       {/* Boarding Pack */}
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-2 h-2 rounded-full bg-purple-400" />
-          <span className="text-xs font-bold text-purple-400 uppercase tracking-widest">Boarding Pack</span>
-        </div>
-        <div className="space-y-2">
+      <div className="mb-6">
+        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Boarding Pack</span>
+        <div className="space-y-1.5">
           {BOARDING_VIDEOS.map((v, idx) => (
             <motion.a
               key={idx}
               href={v.url}
               target="_blank"
               rel="noopener noreferrer"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 + idx * 0.05 }}
-              className="flex items-center gap-3 bg-white/5 border border-purple-500/20 rounded-2xl px-4 py-3 hover:bg-purple-500/10 active:scale-[0.98] transition-all group"
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 + idx * 0.04 }}
+              className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 hover:bg-red-500/10 hover:border-red-500/20 active:scale-[0.98] transition-all group"
             >
-              <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center shrink-0 group-hover:bg-purple-500 transition-all">
-                <Play size={13} className="text-purple-300 group-hover:text-white ml-0.5" fill="currentColor" />
+              <div className="w-6 h-6 rounded-full bg-red-500/10 flex items-center justify-center shrink-0 group-hover:bg-red-500/20 transition-all">
+                <Play size={10} className="text-red-400 ml-0.5" fill="currentColor" />
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] text-purple-400 font-bold uppercase tracking-wider">{v.title} {v.no}</p>
-                <p className="text-xs text-slate-300 font-medium truncate">{v.speaker}</p>
-              </div>
-              <span className="text-[10px] text-slate-500 shrink-0">YouTube →</span>
+              <p className="text-xs text-slate-300 truncate flex-1">{v.speaker}</p>
+              <span className="text-[9px] text-slate-600 shrink-0">{v.no} / 4</span>
             </motion.a>
           ))}
         </div>
       </div>
 
       {/* Pack 1–15 */}
-      <div className="flex items-center gap-2 mb-3">
-        <div className="w-2 h-2 rounded-full bg-red-400" />
-        <span className="text-xs font-bold text-red-400 uppercase tracking-widest">Pack 1 – 15</span>
-      </div>
+      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Pack 1 – 15</span>
       <div className="grid grid-cols-3 gap-2 sm:gap-4">
         {PACKS.map((pack, idx) => (
           <motion.a

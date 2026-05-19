@@ -87,7 +87,6 @@ export default function EmphasisPackPage() {
                 <Play size={10} className="text-red-400 ml-0.5" fill="currentColor" />
               </div>
               <p className="text-xs text-slate-300 truncate flex-1">{v.speaker}</p>
-              <span className="text-[9px] text-slate-600 shrink-0">{v.no} / 4</span>
             </motion.a>
           ))}
         </div>

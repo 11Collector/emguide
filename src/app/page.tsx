@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { CheckSquare, Briefcase, Users, UserPlus, Sparkles, ChevronRight, Play, RefreshCw } from "lucide-react";
+import { CheckSquare, Briefcase, Users, UserPlus, Sparkles, ChevronRight, Play, RefreshCw, Timer } from "lucide-react";
 import Link from "next/link";
-import { format, startOfDay, endOfDay } from "date-fns";
+import { format, startOfDay, endOfDay, differenceInDays } from "date-fns";
 import { PWAInstall } from "@/components/pwa-install";
 import { LoginButton } from "@/components/auth/LoginButton";
 import { useAppStore } from "@/store/useAppStore";
@@ -68,6 +68,13 @@ export default function HomePage() {
   const { newComers } = useAppStore();
   const [quote, setQuote] = useState("");
   const [quoteKey, setQuoteKey] = useState(0);
+
+  const A70_END = new Date("2028-08-31");
+  const daysLeft = differenceInDays(A70_END, new Date());
+  const weeksLeft = Math.floor(daysLeft / 7);
+  const monthsLeft = Math.floor(daysLeft / 30.44);
+  const totalDays = differenceInDays(A70_END, new Date("2026-05-28"));
+  const progress = Math.max(0, Math.min(100, ((totalDays - daysLeft) / totalDays) * 100));
 
   const todayComersCount = (newComers || []).filter(c => {
     const now = new Date();
@@ -157,6 +164,83 @@ export default function HomePage() {
             "{quote}"
           </motion.p>
         </AnimatePresence>
+      </motion.div>
+
+      {/* A70 Countdown */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25 }}
+        className="mb-8"
+      >
+        <div className="bg-gradient-to-br from-orange-500/10 via-red-500/5 to-rose-500/10 border border-orange-500/25 rounded-3xl p-5 relative overflow-hidden shadow-[0_0_30px_rgba(249,115,22,0.08)]">
+          {/* Glow bg */}
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent" />
+          <div className="absolute -bottom-8 -right-8 text-orange-500/5">
+            <Timer size={140} />
+          </div>
+
+          {/* Header */}
+          <div className="flex items-center justify-between mb-5 relative z-10">
+            <div className="flex items-center gap-2">
+              {/* Pulsing red dot */}
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
+              </span>
+              <span className="text-xs font-bold text-orange-400 uppercase tracking-widest">Countdown to A70</span>
+            </div>
+            <span className="text-[10px] text-slate-500 font-medium bg-white/5 px-2 py-1 rounded-full">31 ส.ค. 2028</span>
+          </div>
+
+          {/* Main number */}
+          <div className="flex items-end gap-3 mb-5 relative z-10">
+            <motion.span
+              animate={{ opacity: [1, 0.7, 1] }}
+              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+              className="text-6xl font-black tabular-nums leading-none bg-gradient-to-br from-orange-300 to-red-400 bg-clip-text text-transparent"
+            >
+              {daysLeft.toLocaleString()}
+            </motion.span>
+            <div className="mb-1.5">
+              <span className="text-xl font-black text-orange-300">วัน</span>
+              <p className="text-[10px] text-slate-500 leading-tight mt-0.5">เหลืออยู่</p>
+            </div>
+          </div>
+
+          {/* Sub units */}
+          <div className="flex gap-3 mb-5 relative z-10">
+            <div className="flex-1 bg-white/5 rounded-2xl p-3 text-center border border-white/5">
+              <p className="text-xl font-black text-white tabular-nums">{monthsLeft}</p>
+              <p className="text-[9px] text-slate-500 uppercase tracking-wider mt-0.5">เดือน</p>
+            </div>
+            <div className="flex-1 bg-white/5 rounded-2xl p-3 text-center border border-white/5">
+              <p className="text-xl font-black text-white tabular-nums">{weeksLeft}</p>
+              <p className="text-[9px] text-slate-500 uppercase tracking-wider mt-0.5">สัปดาห์</p>
+            </div>
+            <div className="flex-1 bg-red-500/10 rounded-2xl p-3 text-center border border-red-500/20">
+              <p className="text-xl font-black text-red-400 tabular-nums">{daysLeft}</p>
+              <p className="text-[9px] text-red-400/60 uppercase tracking-wider mt-0.5">วัน</p>
+            </div>
+          </div>
+
+          {/* Progress bar */}
+          <div className="relative z-10">
+            <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 1.2, delay: 0.4, ease: "easeOut" }}
+                className="h-full bg-gradient-to-r from-orange-500 to-red-500 rounded-full shadow-[0_0_8px_rgba(249,115,22,0.6)]"
+              />
+            </div>
+            <div className="flex justify-between mt-2">
+              <span className="text-[9px] text-slate-600">เริ่มต้น</span>
+              <span className="text-[9px] text-orange-400 font-bold">{progress.toFixed(1)}% ผ่านไปแล้ว</span>
+              <span className="text-[9px] text-slate-600">A70</span>
+            </div>
+          </div>
+        </div>
       </motion.div>
 
       {/* App Features */}

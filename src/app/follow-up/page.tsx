@@ -49,16 +49,19 @@ export default function FollowUpPage() {
   );
 
   const sortedCases = [...filteredCases].sort((a, b) => {
+    // Primary: % completion (descending — most progress first)
+    const aCompleted = a.completedSteps?.length || 0;
+    const bCompleted = b.completedSteps?.length || 0;
+    if (bCompleted !== aCompleted) return bCompleted - aCompleted;
+
+    // Secondary: favorite
     if (a.isFavorite && !b.isFavorite) return -1;
     if (!a.isFavorite && b.isFavorite) return 1;
 
+    // Tertiary: pack number
     const aPackNum = getPackNumber(a.emphasisPack);
     const bPackNum = getPackNumber(b.emphasisPack);
-    if (aPackNum !== bPackNum) return bPackNum - aPackNum;
-
-    const aCompleted = a.completedSteps?.length || 0;
-    const bCompleted = b.completedSteps?.length || 0;
-    return bCompleted - aCompleted;
+    return bPackNum - aPackNum;
   });
 
   const toggleExpand = (id: string) => {

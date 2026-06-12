@@ -303,6 +303,7 @@ export default function HomePage() {
         <div className="grid grid-cols-2 gap-3">
           {[
             {
+              num: "01",
               title: "Why Emphasis",
               speaker: "ภาคภูมิ นิติธรรม",
               url: "https://youtu.be/LuIrrAqeVZo?si=vYEXN6s25XoeGLu9",
@@ -310,11 +311,28 @@ export default function HomePage() {
               border: "border-red-500/30"
             },
             {
+              num: "02",
               title: "Business Partnership",
               speaker: "วิรุฬ โตศะศุข",
               url: "https://youtu.be/Az8wfW6jpuc?si=rRMFgoUeHWx5c46_",
               color: "from-orange-500/20 to-yellow-500/20",
               border: "border-orange-500/30"
+            },
+            {
+              num: "03",
+              title: "Boarding Pack",
+              speaker: "ภญ.จิรภัทร์ ไกรพธารากุล & สธนวัฒ อัครพงศ์ไพศาล",
+              url: "https://youtu.be/Yc3uR5EEHmw",
+              color: "from-yellow-500/20 to-amber-500/20",
+              border: "border-yellow-500/30"
+            },
+            {
+              num: "04",
+              title: "Boarding Pack",
+              speaker: "พิมสาย ตันมณี & ศุภนาถ คุณากรจิตติรักษ์",
+              url: "https://youtu.be/QLa_IdEyK2c",
+              color: "from-amber-500/20 to-orange-500/20",
+              border: "border-amber-500/30"
             }
           ].map((vid, idx) => (
             <motion.a
@@ -327,12 +345,13 @@ export default function HomePage() {
               transition={{ delay: 0.9 + (idx * 0.1) }}
               className={`bg-gradient-to-br ${vid.color} backdrop-blur-sm border ${vid.border} rounded-2xl p-4 flex flex-col items-center text-center gap-2 hover:brightness-110 active:scale-[0.98] transition-all h-full`}
             >
-              <div className="bg-red-500/20 p-3 rounded-xl shadow-inner text-red-400 shrink-0">
+              <div className="bg-red-500/20 p-3 rounded-xl shadow-inner text-red-400 shrink-0 relative">
                 <Play size={20} fill="currentColor" />
+                <span className="absolute -top-1.5 -right-1.5 text-[9px] font-black text-white/50 bg-black/30 rounded-full w-4 h-4 flex items-center justify-center">{vid.num}</span>
               </div>
               <div className="flex-1 flex flex-col justify-center w-full mt-1">
                 <h4 className="font-bold text-white text-[13px] leading-tight mb-1">{vid.title}</h4>
-                <p className="text-[10px] text-slate-300 font-medium uppercase tracking-wider line-clamp-2 leading-snug">{vid.speaker}</p>
+                <p className="text-[10px] text-slate-300 font-medium line-clamp-2 leading-snug">{vid.speaker}</p>
               </div>
             </motion.a>
           ))}

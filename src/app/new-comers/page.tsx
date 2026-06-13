@@ -70,12 +70,13 @@ export default function NewComersPage() {
     });
   }
 
-  // Get unique platforms for filter buttons
-  const allPlatforms = Array.from(new Set((newComers || []).map(c => c.platform).filter(Boolean)));
+  // Get unique platforms for filter buttons (only for the selected month)
+  const monthlyComers = (newComers || []).filter(c => c.createdAt >= monthStart && c.createdAt <= monthEnd);
+  const allPlatforms = Array.from(new Set(monthlyComers.map(c => c.platform).filter(Boolean)));
 
   // Count platforms for sorting (show most common first)
   const platformCounts = allPlatforms.reduce((acc, p) => {
-    acc[p] = (newComers || []).filter(c => c.platform === p).length;
+    acc[p] = monthlyComers.filter(c => c.platform === p).length;
     return acc;
   }, {} as Record<string, number>);
 

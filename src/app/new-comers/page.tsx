@@ -46,6 +46,8 @@ export default function NewComersPage() {
   const monthStart = startOfMonth(currentDate).getTime();
   const monthEnd = endOfMonth(currentDate).getTime();
   let currentMonthComers = (newComers || []).filter(c => c.createdAt >= monthStart && c.createdAt <= monthEnd);
+  
+  const baseMonthComersCount = currentMonthComers.length;
 
   // Apply search filter
   currentMonthComers = currentMonthComers.filter(c =>
@@ -219,39 +221,41 @@ export default function NewComersPage() {
       </div>
 
       {/* Platform Filter - Horizontal Scrollable */}
-      <div className="overflow-x-auto scrollbar-hide mb-4 relative z-10 -mx-6 px-6" style={{
-        backgroundImage: 'linear-gradient(to right, transparent, transparent calc(100% - 40px), rgba(0, 0, 0, 0.1) 100%)',
-        backgroundAttachment: 'local',
-        backgroundRepeat: 'no-repeat'
-      }}>
-        <div className="flex gap-2 w-max pr-6">
-          <button
-            onClick={() => setFilterPlatform("")}
-            className={cn(
-              "px-3 py-1.5 rounded-full text-xs font-bold transition-all border whitespace-nowrap",
-              !filterPlatform
-                ? "bg-pink-500/20 text-pink-300 border-pink-500/30"
-                : "bg-white/5 text-slate-400 border-white/10 hover:bg-white/10"
-            )}
-          >
-            All
-          </button>
-          {sortedPlatforms.map((platform) => (
+      {baseMonthComersCount > 0 && sortedPlatforms.length > 0 && (
+        <div className="overflow-x-auto scrollbar-hide mb-4 relative z-10 -mx-6 px-6" style={{
+          backgroundImage: 'linear-gradient(to right, transparent, transparent calc(100% - 40px), rgba(0, 0, 0, 0.1) 100%)',
+          backgroundAttachment: 'local',
+          backgroundRepeat: 'no-repeat'
+        }}>
+          <div className="flex gap-2 w-max pr-6">
             <button
-              key={platform}
-              onClick={() => setFilterPlatform(filterPlatform === platform ? "" : platform)}
+              onClick={() => setFilterPlatform("")}
               className={cn(
                 "px-3 py-1.5 rounded-full text-xs font-bold transition-all border whitespace-nowrap",
-                filterPlatform === platform
-                  ? "bg-pink-500 text-white border-pink-400"
+                !filterPlatform
+                  ? "bg-pink-500/20 text-pink-300 border-pink-500/30"
                   : "bg-white/5 text-slate-400 border-white/10 hover:bg-white/10"
               )}
             >
-              {platform}
+              All
             </button>
-          ))}
+            {sortedPlatforms.map((platform) => (
+              <button
+                key={platform}
+                onClick={() => setFilterPlatform(filterPlatform === platform ? "" : platform)}
+                className={cn(
+                  "px-3 py-1.5 rounded-full text-xs font-bold transition-all border whitespace-nowrap",
+                  filterPlatform === platform
+                    ? "bg-pink-500 text-white border-pink-400"
+                    : "bg-white/5 text-slate-400 border-white/10 hover:bg-white/10"
+                )}
+              >
+                {platform}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="flex justify-between items-center mb-4 relative z-10 gap-2">
         <button

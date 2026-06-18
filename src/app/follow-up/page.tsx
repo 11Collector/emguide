@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 
 
 const BUSINESS_STEPS = ["BM", "BI", "2YRS", "UNIQUENESS", "CHECKIN", "5STEP"];
-const PRODUCT_STEPS = ["6W", "ARTISTRY", "ESPRING", "HOUSEHOLD", "SKY", "DETOX"];
+const PRODUCT_STEPS = ["6W", "ARTISTRY", "ESPRING", "HOUSEHOLD", "SKY", "DETOX", "BREAKFAST SET"];
 const EMPHASIS_PACKS = ["Boarding", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"];
 
 export default function FollowUpPage() {

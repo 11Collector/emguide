@@ -125,6 +125,41 @@ export default function DailyChecklist() {
     if (typeof window !== "undefined" && "Notification" in window) {
       setNotificationPermission(Notification.permission);
     }
+
+    // Run one-time migration to count tasks with count > 0 as completed for past days
+    const store = useAppStore.getState();
+    const dailyStatus = { ...store.dailyStatus };
+    let modified = false;
+
+    Object.keys(dailyStatus).forEach((dateStr) => {
+      const data = dailyStatus[dateStr];
+      if (!data) return;
+
+      const tasks = [...(data.tasks || [])];
+      const counts = data.taskCounts || {};
+      let taskModified = false;
+
+      if ((counts["social-add"] || 0) > 0 && !tasks.includes("social-add")) {
+        tasks.push("social-add");
+        taskModified = true;
+      }
+      if ((counts["biz-approach"] || 0) > 0 && !tasks.includes("biz-approach")) {
+        tasks.push("biz-approach");
+        taskModified = true;
+      }
+
+      if (taskModified) {
+        dailyStatus[dateStr] = {
+          ...data,
+          tasks
+        };
+        modified = true;
+      }
+    });
+
+    if (modified) {
+      useAppStore.setState({ dailyStatus });
+    }
   }, []);
 
   const handlePermissionResult = (permission: string) => {

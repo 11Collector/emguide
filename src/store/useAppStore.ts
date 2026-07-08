@@ -185,12 +185,10 @@ export const useAppStore = create<AppState>()(
         const counts = currentData.taskCounts || {};
         const newCount = Math.max(0, (counts[taskId] || 0) + delta);
         
-        const target = taskId === "social-add" ? 4 : taskId === "biz-approach" ? 8 : 1;
-        
         let newTasks = [...(currentData.tasks || [])];
-        if (newCount >= target && !newTasks.includes(taskId)) {
+        if (newCount > 0 && !newTasks.includes(taskId)) {
           newTasks.push(taskId);
-        } else if (newCount < target && newTasks.includes(taskId)) {
+        } else if (newCount === 0 && newTasks.includes(taskId)) {
           newTasks = newTasks.filter(t => t !== taskId);
         }
         

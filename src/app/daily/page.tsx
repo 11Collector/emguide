@@ -127,19 +127,37 @@ export default function DailyChecklist() {
     }
   }, []);
 
-  const requestNotificationPermission = async () => {
+  const handlePermissionResult = (permission: string) => {
+    setNotificationPermission(permission);
+    if (permission === "granted") {
+      try {
+        if (typeof window !== "undefined" && "Notification" in window) {
+          new Notification("EM DAILY", {
+            body: "เปิดใช้งานการแจ้งเตือนสำเร็จแล้ว! 🎯 วันนี้เหลือลุยต่ออีกนิดนะ",
+            icon: "/logo.png"
+          });
+        }
+      } catch (e) {
+        console.warn("Failed to instantiate Notification constructor:", e);
+      }
+    }
+  };
+
+  const requestNotificationPermission = () => {
     if (typeof window === "undefined" || !("Notification" in window)) {
       alert("เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือนระบบ");
       return;
     }
     
     try {
-      const permission = await Notification.requestPermission();
-      setNotificationPermission(permission);
-      if (permission === "granted") {
-        new Notification("EM DAILY", {
-          body: "เปิดใช้งานการแจ้งเตือนสำเร็จแล้ว! 🎯 วันนี้เหลือลุยต่ออีกนิดนะ",
-          icon: "/logo.png"
+      // Call requestPermission synchronously to preserve user gesture in Safari
+      const promise = Notification.requestPermission((permission) => {
+        handlePermissionResult(permission);
+      });
+      
+      if (promise && typeof promise.then === "function") {
+        promise.then((permission) => {
+          handlePermissionResult(permission);
         });
       }
     } catch (error) {
@@ -152,10 +170,16 @@ export default function DailyChecklist() {
     if (isClient && notificationPermission === "granted" && easiestUncompletedTask) {
       const sessionKey = `notified_${todayStr}`;
       if (!sessionStorage.getItem(sessionKey)) {
-        new Notification("EM DAILY", {
-          body: `วันนี้ยังมีงานค้างอยู่ ลองเริ่มทำหัวข้อ "${easiestUncompletedTask.label}" ดูก่อนดีไหมครับ? 🎯`,
-          icon: "/logo.png"
-        });
+        try {
+          if (typeof window !== "undefined" && "Notification" in window) {
+            new Notification("EM DAILY", {
+              body: `วันนี้ยังมีงานค้างอยู่ ลองเริ่มทำหัวข้อ "${easiestUncompletedTask.label}" ดูก่อนดีไหมครับ? 🎯`,
+              icon: "/logo.png"
+            });
+          }
+        } catch (e) {
+          console.warn("Failed to trigger automatic browser notification:", e);
+        }
         sessionStorage.setItem(sessionKey, "true");
       }
     }

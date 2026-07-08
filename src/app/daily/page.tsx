@@ -362,7 +362,7 @@ export default function DailyChecklist() {
           )}
         </AnimatePresence>
   
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 relative z-10 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 relative z-10">
           {DAILY_TASKS.map((category, catIdx) => (
             <motion.div 
               key={category.category}
@@ -391,7 +391,10 @@ export default function DailyChecklist() {
                   <div
                     key={task.id}
                     className={cn(
-                      "w-full flex items-center justify-between p-3.5 rounded-2xl transition-all duration-300 group",
+                      "w-full flex justify-between p-3.5 rounded-2xl transition-all duration-300 group gap-3.5",
+                      showCounter 
+                        ? "flex-row md:flex-col md:items-stretch items-center" 
+                        : "flex-row items-center",
                       isCompleted || (showCounter && count > 0)
                         ? "bg-white/5 border border-white/5 shadow-inner" 
                         : "bg-[#0F172A]/40 border border-white/10 hover:bg-white/5 hover:border-white/20 hover:shadow-lg"
@@ -399,7 +402,12 @@ export default function DailyChecklist() {
                   >
                     <button 
                       onClick={() => !showCounter && toggleDailyTask(todayStr, task.id)}
-                      className={cn("flex items-center gap-3 flex-1 text-left", showCounter && "cursor-default")}
+                      className={cn(
+                        "flex items-center gap-3 text-left",
+                        showCounter 
+                          ? "w-auto md:w-full flex-1 md:flex-initial cursor-default" 
+                          : "flex-1"
+                      )}
                     >
                       <div className={cn(
                         "p-2 rounded-xl transition-all duration-300",
@@ -418,14 +426,16 @@ export default function DailyChecklist() {
                     </button>
                     
                     {showCounter ? (
-                      <div className="flex items-center gap-3 ml-2 bg-black/40 rounded-xl p-1 border border-white/5">
+                      <div className="flex items-center justify-between gap-3 bg-black/40 rounded-xl p-1 border border-white/5 w-auto md:w-full shrink-0">
                         <button 
                           onClick={(e) => { e.stopPropagation(); incrementDailyTask(todayStr, task.id, -1); }}
                           className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all"
                         >
                           -
                         </button>
-                        <span className="w-4 text-center text-sm font-bold text-white">{count}</span>
+                        <span className="w-12 text-center text-xs font-bold text-slate-200">
+                          {count} / {task.id === "social-add" ? 4 : task.id === "biz-approach" ? 8 : 1}
+                        </span>
                         <button 
                           onClick={(e) => { e.stopPropagation(); incrementDailyTask(todayStr, task.id, 1); }}
                           className="w-7 h-7 flex items-center justify-center rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg active:scale-95 transition-all"
@@ -480,7 +490,7 @@ export default function DailyChecklist() {
               
               <p className="text-slate-300 text-sm font-medium leading-relaxed mb-8 relative z-10">
                 คุณทำตามระบบสำเร็จไป 1 วันแล้ว<br/>
-                <span className="text-fuchsia-300 font-bold">2 ปีต่อเนื่องสำเร็จแน่นอน 🎯</span>
+                <span className="text-fuchsia-300 font-bold">เป็นทัน A70 แน่นอน 🎯</span>
               </p>
               
               <button 

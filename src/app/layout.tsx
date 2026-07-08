@@ -49,7 +49,7 @@ export default function RootLayout({
       <body className="min-h-full bg-[#030712] text-slate-50 flex justify-center selection:bg-blue-500/30">
         <AuthProvider>
           <FirebaseSyncProvider>
-            <main className="w-full max-w-md min-h-screen relative overflow-x-hidden pt-4 pb-24 bg-background shadow-[0_0_40px_rgba(212,175,55,0.05)] flex flex-col">
+            <main className="w-full max-w-md md:max-w-4xl min-h-screen relative overflow-x-hidden pt-4 pb-24 md:pb-8 bg-background shadow-[0_0_40px_rgba(212,175,55,0.05)] flex flex-col">
               {children}
             </main>
             <BottomNav />

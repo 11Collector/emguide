@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from "date-fns";
+import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO, subMonths, addMonths } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   CheckCircle2, 
@@ -19,7 +19,11 @@ import {
   LineChart,
   BarChart3,
   X,
-  Sparkles
+  Sparkles,
+  ChevronLeft,
+  ChevronRight,
+  Bell,
+  AlertCircle
 } from "lucide-react";
 import Image from "next/image";
 import { useAppStore } from "@/store/useAppStore";
@@ -76,6 +80,7 @@ export default function DailyChecklist() {
   const [isClient, setIsClient] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
   
   const now = new Date();
   const todayStr = format(now, "yyyy-MM-dd");
@@ -84,9 +89,77 @@ export default function DailyChecklist() {
   const totalTasksCount = DAILY_TASKS.reduce((acc, cat) => acc + cat.tasks.length, 0);
   const progress = Math.round((completedTasks.length / totalTasksCount) * 100);
 
+  const [notificationPermission, setNotificationPermission] = useState<string>("default");
+
+  const uncompletedTasksList = DAILY_TASKS.flatMap(cat => cat.tasks).filter(task => {
+    if (task.isCounter) {
+      return getTaskCount(todayStr, task.id) === 0;
+    } else {
+      return !completedTasks.includes(task.id);
+    }
+  });
+
+  const EASY_TASK_ORDER = [
+    "myself-product",
+    "social-hbd",
+    "social-reply",
+    "social-post",
+    "social-add",
+    "myself-book",
+    "myself-link",
+    "biz-follow",
+    "biz-analyze",
+    "biz-approach",
+    "biz-model"
+  ];
+
+  const easiestUncompletedTask = uncompletedTasksList
+    .map(t => ({
+      ...t,
+      rank: EASY_TASK_ORDER.indexOf(t.id) !== -1 ? EASY_TASK_ORDER.indexOf(t.id) : 99
+    }))
+    .sort((a, b) => a.rank - b.rank)[0];
+
   useEffect(() => {
     setIsClient(true);
+    if (typeof window !== "undefined" && "Notification" in window) {
+      setNotificationPermission(Notification.permission);
+    }
   }, []);
+
+  const requestNotificationPermission = async () => {
+    if (typeof window === "undefined" || !("Notification" in window)) {
+      alert("เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือนระบบ");
+      return;
+    }
+    
+    try {
+      const permission = await Notification.requestPermission();
+      setNotificationPermission(permission);
+      if (permission === "granted") {
+        new Notification("EM DAILY", {
+          body: "เปิดใช้งานการแจ้งเตือนสำเร็จแล้ว! 🎯 วันนี้เหลือลุยต่ออีกนิดนะ",
+          icon: "/logo.png"
+        });
+      }
+    } catch (error) {
+      console.error("Error requesting notification permission:", error);
+    }
+  };
+
+  // Trigger automatic browser notification on load if there are uncompleted tasks
+  useEffect(() => {
+    if (isClient && notificationPermission === "granted" && easiestUncompletedTask) {
+      const sessionKey = `notified_${todayStr}`;
+      if (!sessionStorage.getItem(sessionKey)) {
+        new Notification("EM DAILY", {
+          body: `วันนี้ยังมีงานค้างอยู่ ลองเริ่มทำหัวข้อ "${easiestUncompletedTask.label}" ดูก่อนดีไหมครับ? 🎯`,
+          icon: "/logo.png"
+        });
+        sessionStorage.setItem(sessionKey, "true");
+      }
+    }
+  }, [isClient, notificationPermission, easiestUncompletedTask, todayStr]);
 
   useEffect(() => {
     if (isClient) {
@@ -107,9 +180,10 @@ export default function DailyChecklist() {
   if (!isClient) return null;
 
   // Calculate monthly summary
-  const start = startOfMonth(now);
-  const end = endOfMonth(now);
-  const daysPassedInMonth = now.getDate();
+  const isCurrentMonth = selectedMonth.getFullYear() === now.getFullYear() && selectedMonth.getMonth() === now.getMonth();
+  const daysPassedInMonth = isCurrentMonth ? now.getDate() : endOfMonth(selectedMonth).getDate();
+  const selectedYear = selectedMonth.getFullYear();
+  const selectedMonthIdx = selectedMonth.getMonth();
   
   const taskCounts: Record<string, number> = {};
   const categoryStats: Record<string, { completed: number, total: number }> = {};
@@ -127,7 +201,7 @@ export default function DailyChecklist() {
   const summaryQuote = SUMMARY_QUOTES[dayOfYear % SUMMARY_QUOTES.length];
 
   for (let i = 1; i <= daysPassedInMonth; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth(), i);
+    const d = new Date(selectedYear, selectedMonthIdx, i);
     const dStr = format(d, "yyyy-MM-dd");
     const tasks = getTasksForDate(dStr);
     const count = tasks.length;
@@ -153,8 +227,26 @@ export default function DailyChecklist() {
   }
 
   const avgCompletion = activeDays > 0 ? Math.round((totalTasksDone / (totalTasksCount * daysPassedInMonth)) * 100) : 0;
-  const streak = useAppStore.getState().getStreak(totalTasksCount); // Use the store's streak logic (100% completion)
+  const storeStreak = useAppStore.getState().getStreak(totalTasksCount); // Use the store's streak logic (100% completion)
   const currentStreak = useAppStore.getState().getStreak(1); // Any task done counts as active for streak in some contexts, but let's use 100% for prestige
+
+  // Calculate max streak achieved in the selected month
+  let maxStreakInMonth = 0;
+  let currentStreakInMonth = 0;
+  for (let i = 1; i <= daysPassedInMonth; i++) {
+    const d = new Date(selectedYear, selectedMonthIdx, i);
+    const dStr = format(d, "yyyy-MM-dd");
+    const tasks = getTasksForDate(dStr);
+    if (tasks.length === totalTasksCount) {
+      currentStreakInMonth++;
+      if (currentStreakInMonth > maxStreakInMonth) {
+        maxStreakInMonth = currentStreakInMonth;
+      }
+    } else {
+      currentStreakInMonth = 0;
+    }
+  }
+  const streak = isCurrentMonth ? storeStreak : maxStreakInMonth;
 
   return (
     <div className="p-6 min-h-full flex flex-col text-slate-50 relative overflow-hidden">
@@ -221,8 +313,56 @@ export default function DailyChecklist() {
             />
           </div>
         </motion.div>
+
+        <AnimatePresence>
+          {isClient && uncompletedTasksList.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, height: 0, y: -10 }}
+              animate={{ opacity: 1, height: "auto", y: 0 }}
+              exit={{ opacity: 0, height: 0, y: -10 }}
+              className="mb-6 p-4 bg-[#0F172A]/40 backdrop-blur-xl border border-rose-500/20 rounded-3xl relative overflow-hidden shadow-lg shadow-rose-500/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+            >
+              {/* Background Glow */}
+              <div className="absolute top-0 left-0 w-24 h-24 bg-rose-500/10 rounded-full blur-2xl pointer-events-none" />
+              
+              <div className="flex items-start gap-3 relative z-10">
+                {easiestUncompletedTask && (
+                  <div className="w-8 h-8 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 shrink-0 mt-0.5 animate-pulse">
+                    <easiestUncompletedTask.icon size={16} />
+                  </div>
+                )}
+                <div>
+                  <h4 className="text-xs font-black text-rose-200 uppercase tracking-wider">
+                    สะสมความสำเร็จวันต่อวัน! 🎯
+                  </h4>
+                  <p className="text-slate-300 text-xs font-medium mt-1 leading-relaxed">
+                    ลองเริ่มลงมือทำหัวข้อนี้ก่อนดีไหมครับ? ง่ายสุดเลย:<br />
+                    <span className="text-white font-bold text-sm bg-white/5 border border-white/10 px-2 py-0.5 rounded-md mt-1 inline-block">
+                      👉 {easiestUncompletedTask?.label}
+                    </span>
+                    {uncompletedTasksList.length > 1 && (
+                      <span className="text-slate-400 block text-[10px] mt-1.5 font-bold uppercase tracking-wider">
+                        (มีงานค้างเหลืออีก {uncompletedTasksList.length - 1} อย่าง)
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              {notificationPermission !== "granted" && (
+                <button
+                  onClick={requestNotificationPermission}
+                  className="relative z-10 shrink-0 self-start sm:self-center px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white rounded-full text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-1.5"
+                >
+                  <Bell size={12} className="text-rose-400" />
+                  เปิดเตือนมือถือ
+                </button>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
   
-        <div className="space-y-6 mb-8 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 relative z-10 items-start">
           {DAILY_TASKS.map((category, catIdx) => (
             <motion.div 
               key={category.category}
@@ -380,9 +520,27 @@ export default function DailyChecklist() {
               <div className="p-6 pb-0 flex justify-between items-center relative z-10">
                 <div>
                   <h2 className="text-2xl font-black text-white tracking-tight">สรุปภาพรวมรายเดือน</h2>
-                  <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] mt-1">
-                    {format(now, "MMMM yyyy")}
-                  </p>
+                  <div className="flex items-center gap-2 mt-1.5 bg-white/5 border border-white/10 rounded-full px-3 py-1 w-fit">
+                    <button 
+                      onClick={() => setSelectedMonth(prev => subMonths(prev, 1))}
+                      className="text-slate-400 hover:text-white transition-colors p-0.5 active:scale-90"
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+                    <span className="text-xs font-bold text-slate-200 uppercase tracking-widest min-w-[110px] text-center">
+                      {format(selectedMonth, "MMMM yyyy")}
+                    </span>
+                    <button 
+                      onClick={() => setSelectedMonth(prev => addMonths(prev, 1))}
+                      disabled={isCurrentMonth}
+                      className={cn(
+                        "text-slate-400 hover:text-white transition-colors p-0.5 active:scale-90",
+                        isCurrentMonth && "opacity-30 cursor-not-allowed hover:text-slate-400 active:scale-100"
+                      )}
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
                 </div>
                 <button 
                   onClick={() => setShowSummary(false)} 

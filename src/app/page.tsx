@@ -253,7 +253,7 @@ export default function HomePage() {
         <h3 className="text-sm font-bold text-slate-300 mb-4 uppercase tracking-wider px-2 flex items-center gap-2">
           🎯 Tools
         </h3>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {APP_FEATURES.map((feat, idx) => {
             const isNewComers = feat.href === "/new-comers";
             return (
